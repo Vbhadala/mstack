@@ -1,0 +1,29 @@
+{
+  "$schema": "./mstack.schema.json",
+  "_comment": "Copy to <repo-root>/.mstack/config.json and edit. Skills read this to locate project-specific paths instead of assuming a specific project layout. Every field is optional; skills fall back to the documented defaults when omitted.",
+
+  "packageScope": "@your-scope",
+
+  "paths": {
+    "designTokens": "packages/config/src/design.ts",
+    "globalsCss": "apps/web/src/app/globals.css",
+    "brandSource": "packages/config/src/brand.ts",
+    "webApp": "apps/web",
+    "mobileApp": "apps/mobile"
+  },
+
+  "commands": {
+    "dev": "pnpm dev",
+    "build": "pnpm build",
+    "lint": "pnpm lint",
+    "typecheck": "pnpm typecheck",
+    "test": "pnpm test",
+    "genMobileTw": "pnpm gen:mobile-tw"
+  },
+
+  "conventions": {
+    "brandStringLiteralRule": true,
+    "serviceLayer": "packages/services",
+    "apiPrefix": "/api/v1"
+  }
+}

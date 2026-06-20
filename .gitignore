@@ -1,0 +1,7 @@
+# OS / editor
+.DS_Store
+*.swp
+
+# Anything a local test run might drop here
+.mstack/
+node_modules/
