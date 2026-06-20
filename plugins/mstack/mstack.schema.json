@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Vbhadala/mstack/blob/main/plugins/mstack/mstack.schema.json",
+  "title": "mstack project config",
+  "description": "Per-repo overrides read by mstack skills via resolve-config.sh. Every field is optional; omitted fields are auto-detected (package manager from lockfile, layout from directory structure, mobile target presence). Place at <repo-root>/.mstack/config.json.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "packageScope": {
+      "type": "string",
+      "description": "Workspace package scope, e.g. \"@acme\". Used when reasoning about internal imports.",
+      "examples": ["@acme", "@your-scope"]
+    },
+    "paths": {
+      "type": "object",
+      "description": "Project-relative file/dir locations. Defaults follow the detected layout (monorepo: packages/config + apps/web; flat: src/config + repo root).",
+      "additionalProperties": false,
+      "properties": {
+        "designTokens": {
+          "type": "string",
+          "description": "Source-of-truth design tokens file.",
+          "examples": ["packages/config/src/design.ts", "src/config/design.ts"]
+        },
+        "globalsCss": {
+          "type": "string",
+          "description": "Global CSS file that mirrors the tokens.",
+          "examples": ["apps/web/src/app/globals.css", "src/app/globals.css"]
+        },
+        "brandSource": {
+          "type": "string",
+          "description": "Single source for brand strings (name, tagline).",
+          "examples": ["packages/config/src/brand.ts", "src/config/brand.ts"]
+        },
+        "webApp": {
+          "type": "string",
+          "description": "Web app root. \".\" for a flat single-app repo.",
+          "examples": ["apps/web", "."]
+        },
+        "mobileApp": {
+          "type": ["string", "null"],
+          "description": "Mobile (Expo) app root, or null if the project has no mobile target.",
+          "examples": ["apps/mobile", null]
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "description": "Package scripts. Defaults derive from the detected package manager (pnpm: \"pnpm <script>\"; npm/bun: \"<pm> run <script>\").",
+      "additionalProperties": false,
+      "properties": {
+        "dev": { "type": "string" },
+        "build": { "type": "string" },
+        "lint": { "type": "string" },
+        "typecheck": { "type": "string" },
+        "test": { "type": "string" },
+        "genMobileTw": {
+          "type": "string",
+          "description": "Regenerates the mobile Tailwind config from tokens. Only meaningful when a mobile app is present."
+        }
+      }
+    },
+    "conventions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "brandStringLiteralRule": {
+          "type": "boolean",
+          "description": "If true, skills enforce that brand strings appear only in brandSource.",
+          "default": true
+        },
+        "serviceLayer": {
+          "type": "string",
+          "description": "Where business logic / pure functions live.",
+          "examples": ["packages/services", "src/services"]
+        },
+        "apiPrefix": {
+          "type": "string",
+          "description": "HTTP route prefix for the app's API.",
+          "examples": ["/api/v1", "/api"]
+        }
+      }
+    }
+  }
+}

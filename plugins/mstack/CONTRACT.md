@@ -7,19 +7,36 @@ conventions. Treat this file as the interface between the two.
 
 ## How skills discover the project
 
-Skills resolve project-specific paths and commands in this order:
+Stack-coupled skills resolve project paths/commands by running **one shared
+script** at the start of a run:
 
-1. **`<repo-root>/.mstack/config.json`** — if present, it wins. Copy
-   [`mstack.config.example.json`](./mstack.config.example.json) there and edit.
-2. **`CLAUDE.md` / `AGENTS.md`** — skills read these for conventions and the
-   workspace layout.
-3. **Built-in defaults** — a default template layout (`packages/config`,
-   `apps/web`, `pnpm` scripts). Correct for template forks; may be wrong for a
-   legacy app, which is exactly why `.mstack/config.json` exists.
+```sh
+${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh
+```
 
-A skill must **never hardcode** `packages/config/...`, `@your-scope`, or a `pnpm`
-script as the only option. Read it from config, fall back to the default, and
-say which one you used.
+It prints a single JSON object and applies this precedence (lowest → highest):
+
+1. **Auto-detected defaults** — package manager from the lockfile
+   (`pnpm-lock.yaml`/`yarn.lock`/`package-lock.json`/`bun.lockb`), layout from
+   the directory structure (`apps/web` or `pnpm-workspace.yaml` → `monorepo`;
+   else `src/` → `flat`), and mobile presence (`apps/mobile`). Most apps need
+   no config.
+2. **`<repo-root>/.mstack/config.json`** — deep-merged on top; explicit values
+   always win. Copy [`mstack.config.example.json`](./mstack.config.example.json)
+   there and edit. Validated by [`mstack.schema.json`](./mstack.schema.json).
+
+Output keys skills consume:
+
+| Key | Meaning |
+|---|---|
+| `paths.{designTokens,globalsCss,brandSource,webApp,mobileApp}` | source-of-truth file/dir locations (`mobileApp` is `null` when there's no mobile target) |
+| `commands.{dev,build,lint,typecheck,test,genMobileTw}` | package scripts, prefixed for the detected package manager |
+| `conventions.{brandStringLiteralRule,serviceLayer,apiPrefix}` | project rules |
+| `_resolved.{packageManager,layout,hasMobile,source}` | informational; skills announce these and gate mobile-only steps on `hasMobile` |
+
+A skill must **never hardcode** `packages/config/...`, `@your-scope`, or a
+`pnpm` script as the only option. Resolve it, fall back to the bracketed
+default, and tell the user the detected `layout`/`packageManager`.
 
 ## Runtime layout in the consuming repo
 

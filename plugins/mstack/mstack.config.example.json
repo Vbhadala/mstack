@@ -1,6 +1,7 @@
 {
   "$schema": "./mstack.schema.json",
-  "_comment": "Copy to <repo-root>/.mstack/config.json and edit. Skills read this to locate project-specific paths instead of assuming a specific project layout. Every field is optional; skills fall back to the documented defaults when omitted.",
+  "_comment": "OPTIONAL. resolve-config.sh auto-detects package manager (lockfile), layout (monorepo vs flat), and mobile presence — most apps need NO config file. Add this only to override a detection. Copy to <repo-root>/.mstack/config.json and delete the keys you don't override. Values below show the monorepo defaults.",
+  "_flatLayoutExample": "A flat single-app repo auto-resolves to: designTokens=src/config/design.ts, globalsCss=src/app/globals.css, brandSource=src/config/brand.ts, webApp=., mobileApp=null. Override here only if your paths differ.",
 
   "packageScope": "@your-scope",
 

@@ -107,7 +107,10 @@ include:
 - **Why it fixes the cause** — one line linking the change to the failing
   assertion.
 - **Project hard-rule reminders** for `/mstack-code` if relevant:
-  - No raw `process.env` outside `src/config/env.ts`
+  - No raw `process.env` outside the project's env/config source (see
+    `paths.brandSource`'s directory; default `src/config/env.ts`) — run
+    `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh` if you need the
+    resolved path
   - `import "server-only"` in `lib/db`, `lib/email`, `features/*/server/`
   - Zod at all boundaries (Server Actions, route handlers)
   - Drizzle: schema change → `db:generate` migration; never `db:push`

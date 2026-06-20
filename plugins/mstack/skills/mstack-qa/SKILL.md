@@ -26,6 +26,24 @@ allowed-tools:
 
 Scenario-driven QA: ask focus → test → report → approve → fix → re-verify.
 
+## Resolve project layout
+
+Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. It prints the
+project's resolved `paths`, `commands`, and a `_resolved` block
+(`.mstack/config.json` overrides → auto-detected defaults). The keys this
+skill uses:
+
+- `commands.dev` / `commands.build` / `commands.test` — run THESE, not a
+  hardcoded `pnpm ...` (e.g. an npm project resolves to `npm run dev`)
+- `paths.brandSource` and `conventions.brandStringLiteralRule` — the brand /
+  config source and whether to enforce no hardcoded brand strings outside it
+- `paths.webApp`, `_resolved.{packageManager,layout}`
+
+**Throughout this skill, treat every `apps/web/...`, `packages/...`,
+`src/config/...` path literal — and every `pnpm <script>` command literal —
+as the monorepo default. Substitute the resolved `paths.*` / `commands.*`
+value for the actual project.** State the detected `layout`/`packageManager`.
+
 ## Phase 1 — Ask focus
 
 Use AskUserQuestion to determine scope. Offer common scenarios:
@@ -37,7 +55,7 @@ Use AskUserQuestion to determine scope. Offer common scenarios:
 
 Also ask: which env (`localhost:3000`, staging URL)? If localhost, verify the
 dev server is up via `curl -sf http://localhost:3000 >/dev/null` — start it
-with `npm run dev` only if the user confirms.
+with the resolved `commands.dev` (default `pnpm dev`) only if the user confirms.
 
 ## Phase 2 — Test
 
@@ -79,9 +97,13 @@ If declined, exit cleanly with status `report-only`.
 For each approved issue:
 
 1. TaskUpdate `in_progress`.
-2. Make the fix. Honour the project's hard rules from `AGENTS.md` (no raw `process.env`,
-   `import "server-only"`, Zod boundaries, Drizzle generate-not-push).
-3. Run typecheck if `.ts`/`.tsx` was touched.
+2. Make the fix. Honour the project's hard rules from `AGENTS.md` (no raw
+   `process.env` or hardcoded brand strings outside the brand/config source —
+   `paths.brandSource` and its directory; only enforce the brand-string rule
+   when `conventions.brandStringLiteralRule` is set — plus `import
+   "server-only"`, Zod boundaries, Drizzle generate-not-push where they apply).
+3. Run the resolved `commands.typecheck` (default `pnpm typecheck`) if
+   `.ts`/`.tsx` was touched.
 4. Re-run the failing scenario via Playwright. If it now passes, mark fixed.
    If not, **pause** (one retry max) and ask the user.
 5. Commit per fix using:

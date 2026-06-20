@@ -4,7 +4,33 @@ All notable changes to the `mstack` plugin. Format: [Keep a Changelog](https://k
 This plugin follows SemVer; the **Contract** sub-section flags changes to the
 [skill ↔ project contract](./CONTRACT.md).
 
-## [Unreleased]
+## [0.2.0] — Layer 2: config-driven portability
+
+### Added
+- `shared/bin/resolve-config.sh` — single resolver that auto-detects package
+  manager (lockfile), layout (monorepo vs flat), and mobile presence, then
+  deep-merges `<repo>/.mstack/config.json` on top. Skills run it to get real
+  `paths`/`commands`/`conventions` instead of assuming a fixed stack.
+- `mstack.schema.json` — JSON Schema for `.mstack/config.json` (the example
+  already referenced it).
+
+### Changed
+- The 7 stack-coupled skills (`mstack-design-system`, `mstack-mockup`,
+  `mstack-ux-audit`, `mstack-code`, `mstack-review`, `mstack-plan`, `mstack-qa`)
+  now resolve project layout via `resolve-config.sh` and substitute resolved
+  values for the monorepo defaults; mobile-only steps gate on `hasMobile`.
+  `mstack-debug` got a one-line env-path generalization.
+- `validate.sh` now syntax-checks shared scripts, validates the schema, and
+  smoke-tests the resolver output.
+
+### Contract
+- **Skills now resolve the project by running
+  `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`** (auto-detect →
+  `.mstack/config.json` override). Consuming repos may add a `.mstack/config.json`
+  to override any auto-detected path/command; most apps need none. See
+  [`CONTRACT.md`](./CONTRACT.md).
+
+## [0.1.0]
 
 ### Added
 - Initial extraction of the mstack workflow from the source template

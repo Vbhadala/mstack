@@ -4,10 +4,10 @@ description: |
   Formulate (or rebrand) the design system for an app project. Accepts
   references — screenshots, Figma URLs, competitor sites, or a freeform
   brief — and proposes a complete system (color, typography, radius,
-  motion, brand voice). Writes tokens directly to the shared monorepo
-  source of truth (packages/config/src/design.ts,
-  apps/web/src/app/globals.css, packages/config/src/brand.ts) and
-  regenerates the mobile Tailwind config so web + Expo + email stay in
+  motion, brand voice). Writes tokens directly to the project's
+  source-of-truth files (resolved per project — design tokens, globals
+  CSS, brand source) and, when the project has a mobile target,
+  regenerates its mobile Tailwind config so web + mobile + email stay in
   sync. Produces .mstack/design-system/DESIGN.md plus light/dark preview
   pages. Upstream of /mstack-mockup.
   Use when the user says "design system", "brand", "rebrand the app",
@@ -25,13 +25,34 @@ allowed-tools:
 
 # mstack-design-system
 
-Build or rebuild the design system. Source of truth is
-`packages/config/src/design.ts` + `packages/config/src/brand.ts` +
-`apps/web/src/app/globals.css`. Mobile Tailwind is **generated** from
-those — never edit it directly.
+Build or rebuild the design system. The source of truth is three project
+files — design tokens, globals CSS, and brand source — resolved per project
+in Phase 0. When the project has a mobile target, its Tailwind config is
+**generated** from the tokens — never edit it directly.
 
 This skill is upstream of `/mstack-mockup`. Mockups consume tokens; this
 skill defines them.
+
+## Phase 0 — Resolve project layout
+
+Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. It prints the
+project's resolved `paths`, `commands`, and a `_resolved` block
+(`.mstack/config.json` overrides → auto-detected defaults). The keys this
+skill uses:
+
+- `paths.designTokens` [monorepo default `packages/config/src/design.ts`]
+- `paths.globalsCss` [default `apps/web/src/app/globals.css`]
+- `paths.brandSource` [default `packages/config/src/brand.ts`]
+- `commands.genMobileTw` — the mobile-token regen script
+- `_resolved.hasMobile` / `_resolved.layout` / `_resolved.packageManager`
+
+**Throughout this skill, treat every `packages/config/...`, `apps/web/...`,
+or `apps/mobile/...` path literal — and every `pnpm <script>` command
+literal — as the monorepo default. Substitute the resolved `paths.*` /
+`commands.*` value for the actual project.** Tell the user the detected
+`layout` and `packageManager`. **If `_resolved.hasMobile` is false**, this
+project has no mobile target: skip every `gen:mobile-tw`, mobile-font, and
+"both surfaces" step, and treat web as the only surface.
 
 ## Phase 1 — Detect mode
 
@@ -149,15 +170,19 @@ Only after explicit lock-in. Edit in this exact order:
    `url`, and the `emailColors` hex fallbacks (Gmail / Outlook do not
    support `oklch()` inline, so these must be hand-tuned sRGB hex
    equivalents of `design.colors.light`).
-4. Run `pnpm gen:mobile-tw` from repo root to regenerate
-   `apps/mobile/tailwind.config.js`. **Never hand-edit that file** — it
-   has a `DO NOT EDIT — GENERATED FILE` header for a reason.
-5. Run `pnpm check-contrast`. If it fails:
-   - If the failure is the documented brand CTA exemption, ensure
-     `scripts/check-contrast.ts`'s allowlist still covers it.
+4. **Mobile sync — only if `_resolved.hasMobile`.** Run
+   `commands.genMobileTw` from repo root to regenerate the mobile Tailwind
+   config (default `apps/mobile/tailwind.config.js`). **Never hand-edit that
+   file** — it has a `DO NOT EDIT — GENERATED FILE` header for a reason. If
+   the project has no mobile target, skip this step.
+5. **If the project provides a contrast check** (e.g. a `check-contrast`
+   script), run it. If it fails:
+   - If the failure is a documented brand exemption, ensure the check's
+     allowlist still covers it.
    - If it's a new failure, fix the offending pair or get explicit
      user approval to add it to the allowlist.
-6. Run `pnpm gen:mobile-tw:check` to confirm mobile is in sync.
+6. If `_resolved.hasMobile` and a `gen:mobile-tw:check` script exists, run it
+   to confirm mobile is in sync.
 
 If `brand.name` changed, warn the user that the ESLint
 `no-brand-string-literal` rule reads `brand.name` from this file — they

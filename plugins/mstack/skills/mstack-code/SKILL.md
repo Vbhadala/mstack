@@ -29,6 +29,28 @@ Execute an approved implementation plan from `/mstack-review`. Autonomous by
 default; pauses only when a task hits a real ambiguity. One atomic commit
 per task.
 
+## Resolve project layout
+
+Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. It prints the
+project's resolved `paths`, `commands`, and a `_resolved` block
+(`.mstack/config.json` overrides → auto-detected defaults). The keys this
+skill uses:
+
+- `commands.typecheck` / `commands.lint` / `commands.test` / `commands.build`
+  — run THESE, not a hardcoded `pnpm ...` (e.g. an npm project resolves to
+  `npm run typecheck`)
+- `paths.webApp` [monorepo default `apps/web`; flat `.`]
+- `paths.brandSource` and `conventions.brandStringLiteralRule` — the brand /
+  config source and whether to enforce no hardcoded brand strings outside it
+- `conventions.serviceLayer`, `conventions.apiPrefix`
+- `_resolved.{packageManager,layout,hasMobile}`
+
+**Throughout this skill, treat every `packages/...`, `apps/web/...`,
+`src/config/...` path literal — and every `pnpm <script>` command literal —
+as the monorepo default. Substitute the resolved `paths.*` / `commands.*`
+value for the actual project.** State the detected `layout` and
+`packageManager` to the user.
+
 ## Pre-flight (must pass before any code edits)
 
 1. **Find the review.** Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/find-latest-review.sh`
@@ -70,16 +92,20 @@ For each task in order:
 
 4. **Make the edits.** Follow the task's `What`. Honor the project's hard rules from
    `AGENTS.md`:
-   - No raw `process.env` outside `src/config/env.ts`
-   - No hardcoded brand strings outside `src/config/`
+   - No raw `process.env` outside the brand/config source (`paths.brandSource`
+     and its directory) — gated on `conventions.brandStringLiteralRule`
+   - No hardcoded brand strings outside the brand/config source
+     (`paths.brandSource` and its directory) — gated on
+     `conventions.brandStringLiteralRule`
    - `import "server-only"` in `lib/db`, `lib/email`, `features/*/server/`
    - Zod at all boundaries (Server Actions, route handlers)
    - Drizzle: schema change → `db:generate` migration; never `db:push`
 
 5. **Verify acceptance.** Run the relevant checks:
-   - If task touched `.ts`/`.tsx` → `npm run typecheck`
-   - If task added a Drizzle schema change → `npm run db:generate` and confirm
-     a migration was produced
+   - If task touched `.ts`/`.tsx` → run `commands.typecheck` [default
+     `pnpm typecheck`]
+   - If task added a Drizzle schema change → `pnpm db:generate` (substitute the
+     project's package manager) and confirm a migration was produced
    - If the task's `Acceptance` field references a specific test → run it
    - Do NOT run e2e/Playwright (that's `/mstack-qa`'s job)
 
@@ -175,9 +201,10 @@ Then:
 
 ## Gotchas to watch for
 
-- **After deleting an app-router `page.tsx`,** run `rm -rf apps/web/.next`
-  before `pnpm typecheck`. Stale `.next/types/validator.ts` files import the
-  now-missing `page.js` and `tsc` fails until `.next` is cleared. (Surfaced
+- **After deleting an app-router `page.tsx`,** run `rm -rf <paths.webApp>/.next`
+  before `commands.typecheck` [default `pnpm typecheck`]. Stale
+  `.next/types/validator.ts` files import the now-missing `page.js` and `tsc`
+  fails until `.next` is cleared. Only applies to Next.js web apps. (Surfaced
   on BetFrnd 2026-05-13; see [ADR 0008](../../../docs/decisions/0008-codebase-conventions.md).)
 
 ## Anti-patterns

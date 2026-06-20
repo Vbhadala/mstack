@@ -27,6 +27,22 @@ allowed-tools:
 User-centric UX audit (visual + copy + flow + accessibility): capture →
 review → report → approve → fix → re-verify.
 
+## Resolve project layout
+
+Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. It prints the
+project's resolved `paths`, `commands`, and a `_resolved` block
+(`.mstack/config.json` overrides → auto-detected defaults). The keys this
+skill uses:
+
+- `paths.designTokens` [monorepo default `packages/config/src/design.ts`]
+- `paths.brandSource` [default `packages/config/src/brand.ts`]
+- `conventions.brandStringLiteralRule` — whether to enforce brand strings only in the brand source
+
+**Throughout this skill, treat every `src/config/...`, `packages/config/...`,
+or `apps/web/...` path literal — and every `pnpm <script>` command literal —
+as the default. Substitute the resolved `paths.*` / `commands.*` value for the
+actual project.** State the detected `layout` to the user.
+
 ## Phase 1 — Scope
 
 Use AskUserQuestion:

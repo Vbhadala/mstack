@@ -2,8 +2,8 @@
 name: mstack-mockup
 description: |
   Generate multiple UI mockup variants for a screen or feature, using the
-  project's existing Tailwind config and design tokens (src/config/design.ts,
-  src/app/globals.css) so the brand actually applies. Outputs static HTML
+  project's existing Tailwind config and design tokens / brand source
+  (resolved per project) so the brand actually applies. Outputs static HTML
   variants under .mstack/mockups/<feature>/v1..vN/, collects feedback, and
   iterates on the chosen direction. Pure design exploration — never edits
   src/.
@@ -22,6 +22,23 @@ allowed-tools:
 
 Generate N design variants for a screen, collect feedback, iterate on the
 winner. Output is static HTML; nothing under `src/` is touched.
+
+## Resolve project layout
+
+Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. It prints the
+project's resolved `paths`, `commands`, and a `_resolved` block
+(`.mstack/config.json` overrides → auto-detected defaults). The keys this
+skill uses:
+
+- `paths.designTokens` [monorepo default `packages/config/src/design.ts`]
+- `paths.globalsCss` [default `apps/web/src/app/globals.css`]
+- `paths.brandSource` [default `packages/config/src/brand.ts`]
+
+**Throughout this skill, treat every `packages/config/...`, `apps/web/...`,
+`apps/mobile/...`, or legacy `src/config/...` path literal — and every
+`pnpm <script>` command literal — as the monorepo default. Substitute the
+resolved `paths.*` / `commands.*` value for the actual project.** State the
+detected `layout` to the user.
 
 ## Phase 1 — Brief
 

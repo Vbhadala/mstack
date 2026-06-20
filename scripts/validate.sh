@@ -43,10 +43,26 @@ if grep -rn '\.claude/skills/' plugins/mstack/skills >/dev/null 2>&1; then
   err "stale '.claude/skills/' references found in skills:"; grep -rn '\.claude/skills/' plugins/mstack/skills
 else ok "no stale .claude/skills references"; fi
 
-# 5. Shared scripts executable
+# 5. Shared scripts executable + syntactically valid
 for s in plugins/mstack/shared/bin/*.sh; do
-  [ -x "$s" ] && ok "exec $(basename "$s")" || err "not executable: $s"
+  base=$(basename "$s")
+  [ -x "$s" ] || err "not executable: $s"
+  if bash -n "$s" >/dev/null 2>&1; then ok "exec+parse $base"; else err "bash syntax error: $s"; fi
 done
+
+# 6. Resolver present and config schema valid
+res="plugins/mstack/shared/bin/resolve-config.sh"
+[ -f "$res" ] && ok "resolver present" || err "missing $res"
+if jq empty plugins/mstack/mstack.schema.json >/dev/null 2>&1; then ok "json mstack.schema.json"; else err "mstack.schema.json does not parse"; fi
+
+# 7. Resolver smoke test (runs in an empty temp dir → must emit valid JSON with expected keys)
+tmp=$(mktemp -d)
+if out=$("$res" 2>/dev/null) && echo "$out" | jq -e '.paths.designTokens and .commands.typecheck and ._resolved.layout' >/dev/null 2>&1; then
+  ok "resolver emits valid config"
+else
+  err "resolver did not emit expected JSON keys"
+fi
+rm -rf "$tmp"
 
 echo
 [ "$fail" = 0 ] && echo "ALL CHECKS PASSED" || echo "VALIDATION FAILED"
