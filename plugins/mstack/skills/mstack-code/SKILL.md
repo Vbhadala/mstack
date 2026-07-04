@@ -29,6 +29,9 @@ Execute an approved implementation plan from `/mstack-review`. Autonomous by
 default; pauses only when a task hits a real ambiguity. One atomic commit
 per task.
 
+**Narration:** one short line per task between tool calls — `tasks.md` and
+`log.md` carry the detailed record, not the transcript.
+
 ## Resolve project layout
 
 Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. It prints the
@@ -73,9 +76,18 @@ value for the actual project.** State the detected `layout` and
    - `log.md` — empty, appended to as the run progresses
    - If the directory already exists with an in-progress `tasks.md`, treat this
      as a **resume**: confirm with the user before continuing.
+   - **After compaction or on any resume, trust `tasks.md` + `git log` over
+     your own recollection.** A task marked `[x]` is DONE — its commit exists
+     in git even if you don't remember creating it. Never re-run it.
 
 5. **Register tasks** with TaskCreate — one task per implementation-plan entry
    from the review. This gives the user live progress visibility.
+
+6. **Contradiction scan.** Read the full task list once before Task 1: do any
+   tasks conflict with each other, with the review's locked decisions, or
+   with the resolved hard rules? If yes, surface ALL findings in ONE
+   AskUserQuestion batch now — never one interrupt per discovery mid-loop.
+   If the scan is clean, start without comment.
 
 ## Per-task loop
 
@@ -109,7 +121,14 @@ For each task in order:
       - `import "server-only"` in server-only modules (Next.js projects).
       - Zod at boundaries — if the project already validates with Zod.
 
-5. **Verify acceptance.** Run the relevant checks:
+5. **Verify acceptance — two named verdicts, both required:**
+
+   **(a) Spec fidelity.** Compare your diff against the task's `What` and
+   `Acceptance` fields: nothing missing, nothing extra — no unrequested
+   refactors, features, or "improvements". Record `spec: ok` (or the
+   deviation) in the task's Notes.
+
+   **(b) Mechanical checks.** Run the relevant ones:
    - If task touched `.ts`/`.tsx` → run `commands.typecheck` [default
      `pnpm typecheck`]
    - If the task changed the DB schema → run the migration-generation command
@@ -141,6 +160,11 @@ For each task in order:
 
 8. Mark TaskUpdate `completed`. Update `tasks.md` to `[x]` with the commit SHA.
    Append a one-line entry to `log.md`.
+   If the task completed but you carry a self-flagged doubt (e.g. "migration
+   may not be reversible", "typecheck passed but the types feel forced"),
+   record it as `Notes: ⚠ concern — <one line>`. Done-with-concerns tasks
+   stay `[x]`, but every `⚠` note MUST surface in the final report's
+   **Concerns** section — a doubt recorded nowhere is a doubt discarded.
 
 ## Pause handling
 
@@ -176,7 +200,14 @@ When the loop ends (complete, aborted, or all-paused-then-stopped), write
   if any
 - **Commits** — list with SHAs and one-line messages
 - **Follow-ups** — what didn't get done, what needs human attention
+- **Concerns** — every `⚠ concern` note from `tasks.md`, verbatim (omit the
+  section only if there are none)
 - **Recommended next step** — usually `/mstack-qa` with focus area
+
+**Evidence rule:** every `✓ done` row and the report's **Status** line must
+be backed by a command run in THIS session (typecheck/test output, commit
+SHA) — cite it. Never carry a claim forward from an earlier run, an agent's
+self-report, or memory. A claim you can't cite is a claim you re-verify.
 
 Then:
 
@@ -222,6 +253,21 @@ Then:
   before `commands.typecheck` [default `pnpm typecheck`]. Stale
   `.next/types/validator.ts` files import the now-missing `page.js` and `tsc`
   fails until `.next` is cleared. Only applies to Next.js web apps.
+
+## Red flags — you are rationalizing
+
+If you catch yourself thinking any of these, STOP — the right column is the
+rule you're about to break:
+
+| Thought | Reality |
+|---|---|
+| "I'll `--no-verify` just this once — the hook failure is unrelated" | Hook failures are signals, unrelated-looking ones most of all. Pause and ask. |
+| "These two tasks are tiny, one commit saves time" | Atomic commits ARE the deliverable — the ledger and PR narrative depend on 1:1 task↔commit. |
+| "One more retry will fix the verification" | One retry max. A second failure is information for a human, not a puzzle for you. |
+| "This edit isn't *really* destructive / doesn't *really* touch the rebrand layer" | If you're arguing about whether a Pause-if trigger matches, it matches. Pause. |
+| "The change is trivial — typecheck can wait until the end" | Per-task verification is what makes a paused run resumable. Run it now. |
+| "I remember what this file looks like" | Files change between tasks. Read before editing, every task. |
+| "`--amend` keeps history clean" | Amend rewrites the previous task's commit. New commit, always. |
 
 ## Anti-patterns
 
