@@ -80,6 +80,8 @@ Read once, in parallel:
 - `src/lib/ui/` — base primitives (EmptyState, LoadingState, ErrorState,
   DataList)
 - The screen's source (`src/app/.../page.tsx`, plus referenced components)
+- `${CLAUDE_PLUGIN_ROOT}/shared/references/frontend-craft.md` — the shared
+  craft rules; critique against these, not personal taste
 
 Critique each screen against:
 
