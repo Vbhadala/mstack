@@ -90,22 +90,32 @@ For each task in order:
    and the situation matches, **pause now** (jump to "Pause handling" below)
    before making edits.
 
-4. **Make the edits.** Follow the task's `What`. Honor the project's hard rules from
-   `AGENTS.md`:
-   - No raw `process.env` outside the brand/config source (`paths.brandSource`
-     and its directory) — gated on `conventions.brandStringLiteralRule`
-   - No hardcoded brand strings outside the brand/config source
-     (`paths.brandSource` and its directory) — gated on
-     `conventions.brandStringLiteralRule`
-   - `import "server-only"` in `lib/db`, `lib/email`, `features/*/server/`
-   - Zod at all boundaries (Server Actions, route handlers)
-   - Drizzle: schema change → `db:generate` migration; never `db:push`
+4. **Make the edits.** Follow the task's `What`. Honor the project's hard
+   rules, in this order of authority:
+   1. **`conventions.hardRules`** from the resolved config — enforce each
+      entry verbatim.
+   2. Hard rules stated in `AGENTS.md` / `CLAUDE.md`.
+   3. **ORM discipline**, gated on `conventions.orm`:
+      - `drizzle` → schema change requires a generated migration
+        (`db:generate`); never `db:push`.
+      - `prisma` → schema change requires a committed migration
+        (`prisma migrate dev --name <slug>`); never `prisma db push`.
+      - `none` → skip.
+   4. Template defaults — apply ONLY when the project actually uses the
+      pattern (check before enforcing):
+      - No raw `process.env` / hardcoded brand strings outside
+        `paths.brandSource`'s directory — gated on
+        `conventions.brandStringLiteralRule`.
+      - `import "server-only"` in server-only modules (Next.js projects).
+      - Zod at boundaries — if the project already validates with Zod.
 
 5. **Verify acceptance.** Run the relevant checks:
    - If task touched `.ts`/`.tsx` → run `commands.typecheck` [default
      `pnpm typecheck`]
-   - If task added a Drizzle schema change → `pnpm db:generate` (substitute the
-     project's package manager) and confirm a migration was produced
+   - If the task changed the DB schema → run the migration-generation command
+     for `conventions.orm` (drizzle: `db:generate`; prisma:
+     `prisma migrate dev --name <task-slug>`) and confirm a migration file
+     was produced
    - If the task's `Acceptance` field references a specific test → run it
    - Do NOT run e2e/Playwright (that's `/mstack-qa`'s job)
 
@@ -119,8 +129,11 @@ For each task in order:
 
    Implements task N/M from .mstack/reviews/<slug>.md
 
-   Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+   Co-Authored-By: <model> <noreply@anthropic.com>
    ```
+
+   Replace `<model>` with the name of the model you are currently running as
+   (e.g. "Claude Fable 5") — never a hardcoded model from this doc.
 
    Type and scope follow the existing repo convention (look at `git log`).
    **Never bypass hooks** (`--no-verify`). If a hook fails, that's a signal —
@@ -170,6 +183,10 @@ Then:
 - Update the plan's status from `reviewed` → `implemented` (Edit the plan doc).
 - Append learnings (`${CLAUDE_PLUGIN_ROOT}/shared/bin/append-learning.sh`) for
   anything non-obvious surfaced during the run.
+- Capture the leftovers: append every `⏸ paused` / `⊘ skipped` task and each
+  **Follow-ups** item to the todo backlog —
+  `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-todo.sh "code <slug>" "<item>"`.
+  Nothing on the report may exist only in the report.
 - Tell the user: "Implementation report at <path>. N commits. Run /mstack-qa
   next."
 
@@ -204,8 +221,7 @@ Then:
 - **After deleting an app-router `page.tsx`,** run `rm -rf <paths.webApp>/.next`
   before `commands.typecheck` [default `pnpm typecheck`]. Stale
   `.next/types/validator.ts` files import the now-missing `page.js` and `tsc`
-  fails until `.next` is cleared. Only applies to Next.js web apps. (Surfaced
-  on BetFrnd 2026-05-13; see [ADR 0008](../../../docs/decisions/0008-codebase-conventions.md).)
+  fails until `.next` is cleared. Only applies to Next.js web apps.
 
 ## Anti-patterns
 

@@ -52,8 +52,10 @@ or pause and ask the user.
    - `assets/` (screenshots, console logs)
    - `specs/` (failing repro test will land here in Phase 3)
 
-3. **Verify dev env.** If repro needs localhost: `curl -sf http://localhost:3000
-   >/dev/null` — start `npm run dev` only with user confirmation.
+3. **Verify dev env.** If repro needs the local server: run
+   `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`, then
+   `curl -sf <devUrl> >/dev/null` — start the resolved `commands.dev` only
+   with user confirmation.
 
 4. **Reproduce the bug.** Use the simplest tool that does it:
    - HTTP-only bug → `curl` is enough
@@ -106,14 +108,12 @@ include:
 - **What to change** — file paths + the change in prose (not a diff).
 - **Why it fixes the cause** — one line linking the change to the failing
   assertion.
-- **Project hard-rule reminders** for `/mstack-code` if relevant:
-  - No raw `process.env` outside the project's env/config source (see
-    `paths.brandSource`'s directory; default `src/config/env.ts`) — run
-    `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh` if you need the
-    resolved path
-  - `import "server-only"` in `lib/db`, `lib/email`, `features/*/server/`
-  - Zod at all boundaries (Server Actions, route handlers)
-  - Drizzle: schema change → `db:generate` migration; never `db:push`
+- **Project hard-rule reminders** for `/mstack-code` if relevant: quote the
+  resolved `conventions.hardRules` entries that apply, plus the ORM
+  discipline for `conventions.orm` (drizzle: generated migrations, never
+  `db:push`; prisma: `prisma migrate dev`, never `db push`), plus any
+  template defaults the project actually uses (`server-only` imports, Zod at
+  boundaries, brand-string rule).
 - **Acceptance criteria** — exactly two:
   1. Run the failing spec at `.mstack/debug/<slug>/specs/repro.spec.ts` → must
      pass.
@@ -202,7 +202,9 @@ framework gotcha).
 - **Don't run the project's permanent e2e suite** for repro. Write a focused
   spec under `specs/` and run only that.
 - **Don't expand scope.** If you find a second bug, note it in the report's
-  out-of-scope section and ask the user — don't chase it.
+  out-of-scope section, capture it via
+  `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-todo.sh "debug <slug>" "<bug>"`,
+  and ask the user — don't chase it.
 - **Don't fix in `e2e/`.** The repro spec belongs under `.mstack/debug/<slug>/specs/`,
   not in the project's permanent suite.
 - **Don't loop in Phase 2** for more than ~5 dead-end hypotheses. Pause and

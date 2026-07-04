@@ -100,6 +100,4 @@ The template includes these sections — keep all of them, even if a section is
   `finally`-unlock runs, the pooler keeps the backend session alive and the
   lock is held indefinitely, bricking subsequent deploys. Use
   `pg_advisory_xact_lock` (transaction-scoped, auto-released by COMMIT /
-  ROLLBACK) or trust deploy serialization (Replit Reserved VM serializes
-  per app). See [ADR 0008](../../../docs/decisions/0008-codebase-conventions.md)
-  + [TEMPLATE.md #19](../../../docs/template/TEMPLATE.md).
+  ROLLBACK) or trust the platform's deploy serialization.

@@ -43,6 +43,16 @@ if grep -rn '\.claude/skills/' plugins/mstack/skills >/dev/null 2>&1; then
   err "stale '.claude/skills/' references found in skills:"; grep -rn '\.claude/skills/' plugins/mstack/skills
 else ok "no stale .claude/skills references"; fi
 
+# 4b. No relative links escaping the plugin dir (break in the installed cache)
+if grep -rn '\.\./\.\./\.\./' plugins/mstack/skills >/dev/null 2>&1; then
+  err "plugin-escaping relative links found in skills:"; grep -rn '\.\./\.\./\.\./' plugins/mstack/skills
+else ok "no plugin-escaping relative links"; fi
+
+# 4c. No pinned model names in commit trailers
+if grep -rnE 'Co-Authored-By: Claude (Opus|Sonnet|Haiku|Fable)' plugins/mstack/skills >/dev/null 2>&1; then
+  err "pinned model names in commit trailers:"; grep -rnE 'Co-Authored-By: Claude (Opus|Sonnet|Haiku|Fable)' plugins/mstack/skills
+else ok "no pinned model trailers"; fi
+
 # 5. Shared scripts executable + syntactically valid
 for s in plugins/mstack/shared/bin/*.sh; do
   base=$(basename "$s")

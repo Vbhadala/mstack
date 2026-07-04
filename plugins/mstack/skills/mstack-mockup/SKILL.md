@@ -108,8 +108,15 @@ Create `.mstack/mockups/<feature-slug>/`:
 
 Each `index.html` is a standalone file:
 
-- Pulls Tailwind via Play CDN (`<script src="https://cdn.tailwindcss.com">`)
-  with a config block that mirrors the project's tokens
+- Pulls Tailwind via Play CDN, pinned to a version
+  (`<script src="https://cdn.tailwindcss.com/3.4.16"></script>`) so mockups
+  don't shift under an unpinned script. **The Play CDN is Tailwind v3** — do
+  not port a v4 `@theme` config into its config block. Drive all
+  token-dependent styling through the inlined CSS variables instead:
+  arbitrary-value classes (`bg-[var(--primary)]`,
+  `text-[var(--muted-foreground)]`) or a small `<style>` block. Use the CDN
+  only for layout/spacing utilities. (Mockups are local design artifacts —
+  never ship this tag in `src/`.)
 - Inlines the project's CSS variables (copied from `globals.css`)
 - Uses real copy from `src/config/brand.ts` where the screen needs branded text
 - Renders at desktop (1280px) and mobile (375px) — use a CSS grid or flex

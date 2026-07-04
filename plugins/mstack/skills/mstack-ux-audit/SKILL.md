@@ -49,7 +49,7 @@ Use AskUserQuestion:
 
 - **Screens** — list of routes/URLs to review (e.g. `/dashboard`, `/messages`)
   or "all main screens" (auto-discovers via `src/app/(app)/**/page.tsx`)
-- **Env** — localhost or deployed URL
+- **Env** — the resolved `devUrl` or a deployed URL
 - **Auth state** — anonymous, logged-in (Playwright will need a fixture or
   manual session — ask which)
 - **Focus** — full audit, or a specific dimension (spacing only, hierarchy
@@ -122,8 +122,11 @@ Per issue:
 
    Addresses issue N from .mstack/ux-audits/<run>/report.md
 
-   Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+   Co-Authored-By: <model> <noreply@anthropic.com>
    ```
+
+   Replace `<model>` with the name of the model you are currently running as
+   (e.g. "Claude Fable 5") — never a hardcoded model from this doc.
    Never bypass hooks. Never amend.
 6. Update `report.md` with status (✓ fixed · ⏸ paused · ⊘ deferred) and the
    after-screenshot path.

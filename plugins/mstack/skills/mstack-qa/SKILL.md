@@ -53,9 +53,10 @@ Use AskUserQuestion to determine scope. Offer common scenarios:
 - A suspected bug (e.g. "unread badge stays after opening message")
 - The whole app smoke pass
 
-Also ask: which env (`localhost:3000`, staging URL)? If localhost, verify the
-dev server is up via `curl -sf http://localhost:3000 >/dev/null` — start it
-with the resolved `commands.dev` (default `pnpm dev`) only if the user confirms.
+Also ask: which env (the resolved `devUrl` — default `http://localhost:3000`,
+Expo `http://localhost:8081` — or a staging URL)? If local, verify the dev
+server is up via `curl -sf <devUrl> >/dev/null` — start it with the resolved
+`commands.dev` (default `pnpm dev`) only if the user confirms.
 
 ## Phase 2 — Test
 
@@ -112,8 +113,11 @@ For each approved issue:
 
    Fixes issue N from .mstack/qa/<run>/report.md
 
-   Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+   Co-Authored-By: <model> <noreply@anthropic.com>
    ```
+
+   Replace `<model>` with the name of the model you are currently running as
+   (e.g. "Claude Fable 5") — never a hardcoded model from this doc.
    Never `--no-verify`. Never amend.
 6. Update `report.md` with the fix status (✓ fixed · ⏸ paused · ⊘ deferred).
 
