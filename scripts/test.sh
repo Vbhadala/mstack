@@ -212,6 +212,39 @@ n="$(grep -c '^- \[ \]' "$r/.mstack/TODOS.md")"
 if [ "$n" = 2 ]; then ok "append-todo: substring text not deduped"; else err "append-todo: substring text not deduped — $n entries"; fi
 rm -rf "$r"
 
+# pipeline-status: table row per plan with next-step recommendation
+r=$(make_repo)
+mkdir -p "$r/.mstack/plans" "$r/.mstack/reviews" "$r/.mstack/code/2026-07-01-billing"
+printf '# Plan: billing\n\n**Status:** reviewed\n' > "$r/.mstack/plans/2026-07-01-billing.md"
+printf '# Review: billing\n\n**Status:** approved\n' > "$r/.mstack/reviews/2026-07-01-billing.md"
+printf '**Status:** in_progress\n\n- [x] **Task 1:** a\n- [ ] **Task 2:** b\n' > "$r/.mstack/code/2026-07-01-billing/tasks.md"
+printf '# Plan: onboarding\n\n**Status:** draft\n' > "$r/.mstack/plans/2026-07-02-onboarding.md"
+out="$(cd "$r" && "$BIN/pipeline-status.sh")"
+echo "$out" | grep -q '2026-07-01-billing | reviewed | approved | in_progress (1/2) | /mstack-code' \
+  && ok "pipeline-status: billing row" || err "pipeline-status: billing row missing/wrong: $out"
+echo "$out" | grep -q '2026-07-02-onboarding | draft | — | — | /mstack-review' \
+  && ok "pipeline-status: draft row" || err "pipeline-status: draft row missing/wrong"
+echo "$out" | grep -q 'Do not edit' \
+  && ok "pipeline-status: generated header" || err "pipeline-status: generated header missing"
+rm -rf "$r"
+
+# pipeline-status: counts open todos
+r=$(make_repo)
+mkdir -p "$r/.mstack/plans"
+printf '# Plan: x\n\n**Status:** draft\n' > "$r/.mstack/plans/2026-07-01-x.md"
+printf '# TODOS\n\n- [ ] one\n- [ ] two\n- [x] done\n' > "$r/.mstack/TODOS.md"
+out="$(cd "$r" && "$BIN/pipeline-status.sh")"
+echo "$out" | grep -q 'Open todos:\*\* 2' \
+  && ok "pipeline-status: todo count" || err "pipeline-status: todo count wrong"
+rm -rf "$r"
+
+# pipeline-status: graceful with no .mstack
+r=$(make_repo)
+out="$(cd "$r" && "$BIN/pipeline-status.sh")"
+echo "$out" | grep -q 'No .mstack directory' \
+  && ok "pipeline-status: empty repo message" || err "pipeline-status: empty repo message missing"
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi
