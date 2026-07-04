@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/Vbhadala/mstack/blob/main/plugins/mstack/mstack.schema.json",
   "title": "mstack project config",
-  "description": "Per-repo overrides read by mstack skills via resolve-config.sh. Every field is optional; omitted fields are auto-detected (package manager from lockfile, layout from directory structure, mobile target presence). Place at <repo-root>/.mstack/config.json.",
+  "description": "Per-repo overrides read by mstack skills via resolve-config.sh. Every field is optional; omitted fields are auto-detected (package manager from lockfile, layout — monorepo/flat/expo — from directory structure and deps, mobile/Expo presence, ORM from deps). Place at <repo-root>/.mstack/config.json.",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -10,6 +10,11 @@
       "type": "string",
       "description": "Workspace package scope, e.g. \"@acme\". Used when reasoning about internal imports.",
       "examples": ["@acme", "@your-scope"]
+    },
+    "devUrl": {
+      "type": "string",
+      "description": "Base URL of the local dev server. Auto-detected: http://localhost:8081 for expo layout, else http://localhost:3000.",
+      "examples": ["http://localhost:3000", "http://localhost:8081", "http://localhost:4000"]
     },
     "paths": {
       "type": "object",
@@ -40,6 +45,21 @@
           "type": ["string", "null"],
           "description": "Mobile (Expo) app root, or null if the project has no mobile target.",
           "examples": ["apps/mobile", null]
+        },
+        "prd": {
+          "type": "string",
+          "description": "Product requirements doc. Skills read it when present; /mstack-init adopts an existing file here.",
+          "default": ".mstack/product/PRD.md"
+        },
+        "roadmap": {
+          "type": "string",
+          "description": "Product roadmap (Now / Next / Later / Shipped).",
+          "default": ".mstack/product/ROADMAP.md"
+        },
+        "todos": {
+          "type": "string",
+          "description": "Captured-work-items backlog. append-todo.sh writes here.",
+          "default": ".mstack/TODOS.md"
         }
       }
     },
@@ -77,6 +97,17 @@
           "type": "string",
           "description": "HTTP route prefix for the app's API.",
           "examples": ["/api/v1", "/api"]
+        },
+        "orm": {
+          "type": "string",
+          "enum": ["drizzle", "prisma", "none"],
+          "description": "Which ORM's migration discipline skills enforce. Auto-detected from dependencies."
+        },
+        "hardRules": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Project-specific hard rules enforced verbatim by /mstack-code, /mstack-qa and /mstack-ux-audit (e.g. \"Never edit generated/ files\").",
+          "default": []
         }
       }
     }

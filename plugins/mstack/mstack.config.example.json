@@ -1,16 +1,20 @@
 {
   "$schema": "./mstack.schema.json",
-  "_comment": "OPTIONAL. resolve-config.sh auto-detects package manager (lockfile), layout (monorepo vs flat), and mobile presence — most apps need NO config file. Add this only to override a detection. Copy to <repo-root>/.mstack/config.json and delete the keys you don't override. Values below show the monorepo defaults.",
-  "_flatLayoutExample": "A flat single-app repo auto-resolves to: designTokens=src/config/design.ts, globalsCss=src/app/globals.css, brandSource=src/config/brand.ts, webApp=., mobileApp=null. Override here only if your paths differ.",
+  "_comment": "OPTIONAL. resolve-config.sh auto-detects package manager (lockfile), layout (monorepo | flat | expo), mobile/Expo presence, and ORM — most apps need NO config file. Add this only to override a detection, then delete every key you don't override. Values below show the monorepo defaults.",
+  "_flatLayoutExample": "A flat single-app repo auto-resolves to: designTokens=src/config/design.ts, globalsCss=src/app/globals.css, brandSource=src/config/brand.ts, webApp=., mobileApp=null, devUrl=http://localhost:3000. A standalone Expo app resolves layout=expo, devUrl=http://localhost:8081, dev='<pm> start', mobileApp='.'. Override here only if your paths differ.",
 
   "packageScope": "@your-scope",
+  "devUrl": "http://localhost:3000",
 
   "paths": {
     "designTokens": "packages/config/src/design.ts",
     "globalsCss": "apps/web/src/app/globals.css",
     "brandSource": "packages/config/src/brand.ts",
     "webApp": "apps/web",
-    "mobileApp": "apps/mobile"
+    "mobileApp": "apps/mobile",
+    "prd": ".mstack/product/PRD.md",
+    "roadmap": ".mstack/product/ROADMAP.md",
+    "todos": ".mstack/TODOS.md"
   },
 
   "commands": {
@@ -25,6 +29,8 @@
   "conventions": {
     "brandStringLiteralRule": true,
     "serviceLayer": "packages/services",
-    "apiPrefix": "/api/v1"
+    "apiPrefix": "/api/v1",
+    "orm": "drizzle",
+    "hardRules": []
   }
 }
