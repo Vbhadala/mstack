@@ -110,6 +110,30 @@
           "default": []
         }
       }
+    },
+    "expo": {
+      "type": "object",
+      "description": "Expo release/operate settings read by /mstack-expo. Emitted with defaults for every project; only meaningful when the project has an Expo target.",
+      "additionalProperties": false,
+      "properties": {
+        "runtimeVersionPolicy": {
+          "type": "string",
+          "enum": ["appVersion", "fingerprint", "nativeVersion", "explicit"],
+          "description": "expo-updates runtimeVersion policy. appVersion is the simple default; fingerprint is the safest for OTA compatibility.",
+          "default": "appVersion"
+        },
+        "updateChannels": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "EAS Update channels the project uses (must include \"production\").",
+          "default": ["production", "preview"]
+        },
+        "monitoring": {
+          "type": "string",
+          "description": "Crash/error monitoring in use, e.g. \"sentry\" or \"none\".",
+          "default": "none"
+        }
+      }
     }
   }
 }

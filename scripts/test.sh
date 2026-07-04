@@ -273,6 +273,29 @@ assert_json "$out" '._resolved.source' auto "resolver: non-object config uses de
 assert_contains "$r/stderr.txt" "not a JSON object" "resolver: non-object config warns"
 rm -rf "$r"
 
+# resolver: expo defaults block present
+r=$(make_repo)
+mkdir -p "$r/src"; touch "$r/package-lock.json"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.expo.runtimeVersionPolicy' appVersion "resolver: expo default policy"
+assert_json "$out" '.expo.updateChannels | length' 2 "resolver: expo default channels"
+assert_json "$out" '.expo.monitoring' none "resolver: expo default monitoring"
+rm -rf "$r"
+
+# resolver: expo config override merges, no unknown-key warning
+r=$(make_repo)
+mkdir -p "$r/src" "$r/.mstack"; touch "$r/package-lock.json"
+echo '{ "expo": { "runtimeVersionPolicy": "fingerprint" } }' > "$r/.mstack/config.json"
+out="$(cd "$r" && "$BIN/resolve-config.sh" 2>"$r/stderr.txt")"
+assert_json "$out" '.expo.runtimeVersionPolicy' fingerprint "resolver: expo policy override"
+assert_json "$out" '.expo.updateChannels | length' 2 "resolver: expo merge keeps defaults"
+if grep -q "unknown config key" "$r/stderr.txt"; then
+  err "resolver: expo key wrongly flagged unknown"
+else
+  ok "resolver: expo key known"
+fi
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi

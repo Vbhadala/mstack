@@ -32,5 +32,11 @@
     "apiPrefix": "/api/v1",
     "orm": "drizzle",
     "hardRules": []
+  },
+
+  "expo": {
+    "runtimeVersionPolicy": "appVersion",
+    "updateChannels": ["production", "preview"],
+    "monitoring": "none"
   }
 }

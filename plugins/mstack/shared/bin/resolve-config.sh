@@ -12,6 +12,7 @@
 #   .paths.{designTokens,globalsCss,brandSource,webApp,mobileApp,prd,roadmap,todos}
 #   .commands.{dev,build,lint,typecheck,test,genMobileTw}
 #   .conventions.{brandStringLiteralRule,serviceLayer,apiPrefix,orm,hardRules}
+#   .expo.{runtimeVersionPolicy,updateChannels,monitoring}
 #   ._resolved.{packageManager,layout,hasMobile,hasExpo,source}   (informational)
 #
 # Layouts: monorepo (apps/web + packages/*) | flat (single app, src/) |
@@ -145,13 +146,18 @@ DEFAULTS="$(jq -n \
       brandStringLiteralRule: true, serviceLayer: $svc, apiPrefix: "/api/v1",
       orm: $orm, hardRules: []
     },
+    expo: {
+      runtimeVersionPolicy: "appVersion",
+      updateChannels: ["production", "preview"],
+      monitoring: "none"
+    },
     _resolved: { packageManager: $pm, layout: $layout, hasMobile: $mob, hasExpo: $expo, source: "auto" }
   }')"
 
 # --- merge user config on top (explicit wins) -------------------------------------
 CFG="$ROOT/.mstack/config.json"
 if [ -f "$CFG" ] && jq -e 'type == "object"' "$CFG" >/dev/null 2>&1; then
-  jq -r 'keys - ["$schema","_comment","_flatLayoutExample","packageScope","devUrl","paths","commands","conventions"] | .[]' "$CFG" \
+  jq -r 'keys - ["$schema","_comment","_flatLayoutExample","packageScope","devUrl","paths","commands","conventions","expo"] | .[]' "$CFG" \
     | while IFS= read -r k; do
         echo "warning: unknown config key \"$k\" in .mstack/config.json — no skill reads it (typo?)" >&2
       done
