@@ -65,6 +65,93 @@ assert_json "$out" '.paths.webApp' "." "resolver: unset keys keep auto values"
 assert_json "$out" '._resolved.source' "config+auto" "resolver: source marks merge"
 rm -rf "$r"
 
+# resolver: standalone Expo app (yarn, scoped name)
+r=$(make_repo)
+mkdir -p "$r/app"
+cat > "$r/package.json" <<'EOF'
+{ "name": "@acme/client-app", "dependencies": { "expo": "~52.0.0" } }
+EOF
+touch "$r/app.json" "$r/yarn.lock"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '._resolved.layout' expo "resolver: expo layout"
+assert_json "$out" '._resolved.hasExpo' true "resolver: hasExpo"
+assert_json "$out" '._resolved.hasMobile' true "resolver: expo implies mobile"
+assert_json "$out" '.devUrl' "http://localhost:8081" "resolver: expo devUrl 8081"
+assert_json "$out" '.commands.dev' "yarn start" "resolver: expo dev is start script"
+assert_json "$out" '.packageScope' "@acme" "resolver: scope from package name"
+assert_json "$out" '.paths.mobileApp' "." "resolver: expo mobileApp is ."
+rm -rf "$r"
+
+# resolver: monorepo with expo in apps/mobile
+r=$(make_repo)
+mkdir -p "$r/apps/web" "$r/apps/mobile"
+touch "$r/pnpm-lock.yaml"
+cat > "$r/apps/mobile/package.json" <<'EOF'
+{ "name": "mobile", "dependencies": { "expo": "~52.0.0" } }
+EOF
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '._resolved.layout' monorepo "resolver: monorepo beats expo"
+assert_json "$out" '._resolved.hasExpo' true "resolver: hasExpo in monorepo mobile"
+assert_json "$out" '.devUrl' "http://localhost:3000" "resolver: monorepo devUrl 3000"
+rm -rf "$r"
+
+# resolver: ORM detection — prisma
+r=$(make_repo)
+mkdir -p "$r/src"
+touch "$r/package-lock.json"
+cat > "$r/package.json" <<'EOF'
+{ "name": "app", "dependencies": { "@prisma/client": "^5.0.0" } }
+EOF
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.orm' prisma "resolver: prisma from deps"
+rm -rf "$r"
+
+# resolver: ORM detection — drizzle in a workspace package
+r=$(make_repo)
+mkdir -p "$r/apps/web" "$r/packages/db"
+touch "$r/pnpm-lock.yaml"
+cat > "$r/packages/db/package.json" <<'EOF'
+{ "name": "db", "dependencies": { "drizzle-orm": "^0.36.0" } }
+EOF
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.orm' drizzle "resolver: drizzle in workspace pkg"
+rm -rf "$r"
+
+# resolver: ORM detection — none
+r=$(make_repo)
+mkdir -p "$r/src"; touch "$r/package-lock.json"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.orm' none "resolver: orm none by default"
+assert_json "$out" '.conventions.hardRules | length' 0 "resolver: hardRules default empty"
+assert_json "$out" '.paths.todos' ".mstack/TODOS.md" "resolver: todos default path"
+assert_json "$out" '.paths.prd' ".mstack/product/PRD.md" "resolver: prd default path"
+rm -rf "$r"
+
+# resolver: devUrl + hardRules config override
+r=$(make_repo)
+mkdir -p "$r/src" "$r/.mstack"; touch "$r/package-lock.json"
+cat > "$r/.mstack/config.json" <<'EOF'
+{ "devUrl": "http://localhost:4000", "conventions": { "hardRules": ["No fetch in components"] } }
+EOF
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.devUrl' "http://localhost:4000" "resolver: devUrl override"
+assert_json "$out" '.conventions.hardRules[0]' "No fetch in components" "resolver: hardRules override"
+rm -rf "$r"
+
+# resolver: unknown top-level config key warns on stderr
+r=$(make_repo)
+mkdir -p "$r/src" "$r/.mstack"; touch "$r/package-lock.json"
+echo '{ "pathz": {} }' > "$r/.mstack/config.json"
+(cd "$r" && "$BIN/resolve-config.sh" >/dev/null 2>"$r/stderr.txt")
+assert_contains "$r/stderr.txt" "unknown config key" "resolver: unknown key warning"
+rm -rf "$r"
+
+# resolver: empty dir defaults to flat (0.3.0 contract change)
+r=$(make_repo)
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '._resolved.layout' flat "resolver: empty dir defaults flat"
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi
