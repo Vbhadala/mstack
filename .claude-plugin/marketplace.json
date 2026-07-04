@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Claude Code plugins. Add with `/plugin marketplace add vbhadala/mstack`.",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "plugins": [
     {
       "name": "mstack",
       "source": "./plugins/mstack",
       "description": "Opinionated plan -> review -> code agent workflow for app projects, plus QA, debug, mockup, design-system, ux-audit and research skills.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "category": "workflow",
       "keywords": [
         "mstack",

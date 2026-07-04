@@ -4,6 +4,38 @@ All notable changes to the `mstack` plugin. Format: [Keep a Changelog](https://k
 This plugin follows SemVer; the **Contract** sub-section flags changes to the
 [skill ↔ project contract](./CONTRACT.md).
 
+## [0.4.0] — Expo release runway + discipline hardening
+
+### Added
+- `/mstack-expo` — Expo release/operate runway: go/no-go preflight gate
+  (expo-doctor, versioning coherence, secrets per profile, native-diff),
+  OTA-vs-native-build decision table, runtimeVersion policy guidance, EAS
+  build/submit and EAS Update runways with per-command confirm gates,
+  monitoring + rollback rule, agency credential isolation, client handoff
+  checklist. Writes `.mstack/releases/<run>/report.md`. `/mstack-ship`
+  recommends it when `_resolved.hasExpo`.
+- Resolver `expo` config block: `expo.{runtimeVersionPolicy,updateChannels,
+  monitoring}` — defaults emitted for every project, overridable via
+  `.mstack/config.json`.
+
+### Changed
+- Hardened the discipline-critical skills with superpowers-derived
+  countermeasures: red-flags/rationalization tables (code, qa, ship,
+  review), evidence rules (report claims must cite same-session command
+  output — code, qa, ship), post-compaction ledger trust + `⚠ concern`
+  notes convention + pre-flight contradiction scan + two-verdict acceptance
+  (spec fidelity vs mechanical checks) in `/mstack-code`, narration
+  contracts in the loop skills.
+
+### Contract
+- **New resolver key `expo`** (`{runtimeVersionPolicy, updateChannels,
+  monitoring}`), always emitted, meaningful when `_resolved.hasExpo`;
+  `"expo"` added to the config known-keys allowlist.
+- **New repo-owned artifact:** `.mstack/releases/<YYYY-MM-DD-HHMM>/report.md`
+  (written by `/mstack-expo`).
+- `/mstack-code`'s `tasks.md` Notes column may carry `⚠ concern — <text>`
+  entries; its report gains a **Concerns** section.
+
 ## [0.3.0] — Init, contract hardening, pipeline close-out
 
 ### Added

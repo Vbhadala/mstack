@@ -2,7 +2,7 @@
 
 The mstack agent workflow as a Claude Code plugin: an opinionated
 **init → plan → review → code → ship** pipeline plus QA, debugging, mockups,
-design-system, UX audit, research, and status — installable into any repo and versioned independently
+design-system, UX audit, research, status, and an Expo release runway — installable into any repo and versioned independently
 of the app it runs in.
 
 ## Skills
@@ -22,6 +22,7 @@ of the app it runs in.
 | `/mstack-init` | no* | Onboard a repo: detection → minimal config → PRD/ROADMAP/TODOS (*writes only `.mstack/` + optional `AGENTS.md`) |
 | `/mstack-status` | no | Regenerate `.mstack/STATUS.md` — pipeline state + next command per feature |
 | `/mstack-ship` | gated | Verify gate → push → PR from review + ledger → roadmap/TODOS close-out |
+| `/mstack-expo` | gated | Expo release runway: preflight gate → OTA vs store build → EAS build/submit/update → monitoring + rollback |
 
 ## Install
 

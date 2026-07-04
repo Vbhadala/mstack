@@ -9,7 +9,7 @@ the shared agent workflow without re-forking the template.
 
 | Plugin | Description |
 |---|---|
-| [`mstack`](./plugins/mstack) | init → plan → review → code → ship workflow + QA, debug, mockup, design-system, ux-audit, research, status |
+| [`mstack`](./plugins/mstack) | init → plan → review → code → ship workflow + QA, debug, mockup, design-system, ux-audit, research, status, expo release |
 
 (Room to grow — add a new plugin under `plugins/` and a new entry in
 `.claude-plugin/marketplace.json`.)
