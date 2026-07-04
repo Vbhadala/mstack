@@ -28,7 +28,7 @@ loop.
 Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. Keys this skill
 uses: `commands.{typecheck,lint,build}` — run THESE, not hardcoded `pnpm`
 variants — plus `paths.roadmap`, `paths.todos`,
-`_resolved.{packageManager,layout}`.
+`_resolved.{packageManager,layout,hasExpo}`.
 
 ## Pre-flight
 
@@ -103,8 +103,13 @@ Approved review: `.mstack/reviews/<slug>.md` — <N> tasks,
 3. **Follow-ups:** every Follow-ups item from the code report and every
    unfixed QA issue for this branch →
    `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-todo.sh "ship <slug>" "<item>"`.
-4. **Summary:** PR URL (or "printed body"), which gates ran/were skipped,
-   roadmap + todos updates made.
+4. **Expo hand-off** (only when `_resolved.hasExpo`): the PR covers the
+   web/JS review surface — the mobile release is a separate runway.
+   Recommend it explicitly: "Mobile release: run `/mstack-expo` (preflight
+   gate, OTA-vs-store-build decision, EAS runway)."
+5. **Summary:** PR URL (or "printed body"), which gates ran/were skipped,
+   roadmap + todos updates made, and the `/mstack-expo` recommendation when
+   it applies.
 
 ## Red flags — you are rationalizing
 
