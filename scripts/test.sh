@@ -177,6 +177,33 @@ else
 fi
 rm -rf "$r"
 
+# append-todo: creates file with header, appends entry
+r=$(make_repo)
+(cd "$r" && "$BIN/append-todo.sh" "qa 2026-07-04 issue 3" "Fix login redirect loop on Safari" >/dev/null)
+assert_contains "$r/.mstack/TODOS.md" "# TODOS" "append-todo: header created"
+assert_contains "$r/.mstack/TODOS.md" "- [ ] Fix login redirect loop on Safari — *qa 2026-07-04 issue 3, " "append-todo: entry format"
+
+# append-todo: dedupes on exact text
+(cd "$r" && "$BIN/append-todo.sh" "user" "Fix login redirect loop on Safari" >/dev/null)
+n="$(grep -c 'Fix login redirect loop' "$r/.mstack/TODOS.md")"
+if [ "$n" = 1 ]; then ok "append-todo: dedupe"; else err "append-todo: dedupe — $n entries"; fi
+rm -rf "$r"
+
+# append-todo: honours config paths.todos override
+r=$(make_repo)
+mkdir -p "$r/.mstack"
+echo '{ "paths": { "todos": "BACKLOG.md" } }' > "$r/.mstack/config.json"
+(cd "$r" && "$BIN/append-todo.sh" "user" "Rate-limit invite endpoint" >/dev/null)
+assert_contains "$r/BACKLOG.md" "Rate-limit invite endpoint" "append-todo: paths.todos override"
+rm -rf "$r"
+
+# append-todo: usage error without args
+if "$BIN/append-todo.sh" onlyone >/dev/null 2>&1; then
+  err "append-todo: should exit 2 without two args"
+else
+  ok "append-todo: usage error"
+fi
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi
