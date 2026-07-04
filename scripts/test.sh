@@ -152,6 +152,31 @@ out="$(cd "$r" && "$BIN/resolve-config.sh")"
 assert_json "$out" '._resolved.layout' flat "resolver: empty dir defaults flat"
 rm -rf "$r"
 
+# find-latest-plan: newest by filename date, not mtime
+r=$(make_repo)
+mkdir -p "$r/.mstack/plans"
+echo x > "$r/.mstack/plans/2026-03-01-newer.md"
+echo x > "$r/.mstack/plans/2026-01-01-older.md"
+# equalise mtimes the wrong way round (older file touched later)
+touch -t 202601010000 "$r/.mstack/plans/2026-03-01-newer.md"
+touch -t 202606010000 "$r/.mstack/plans/2026-01-01-older.md"
+got="$(cd "$r" && "$BIN/find-latest-plan.sh")"
+case "$got" in
+  */2026-03-01-newer.md) ok "find-latest-plan: name order wins" ;;
+  *) err "find-latest-plan: expected 2026-03-01-newer.md, got $got" ;;
+esac
+rm -rf "$r"
+
+# find-latest-plan: errors when empty
+r=$(make_repo)
+mkdir -p "$r/.mstack/plans"
+if (cd "$r" && "$BIN/find-latest-plan.sh" >/dev/null 2>&1); then
+  err "find-latest-plan: should exit 1 on empty dir"
+else
+  ok "find-latest-plan: errors on empty dir"
+fi
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi

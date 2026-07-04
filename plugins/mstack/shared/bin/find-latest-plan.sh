@@ -4,7 +4,7 @@
 # Usage:
 #   find-latest-plan.sh
 #
-# Prints the absolute path of the newest *.md file (by mtime), or exits 1
+# Prints the absolute path of the newest *.md file (by filename — YYYY-MM-DD prefix), or exits 1
 # with a message if .mstack/plans/ is empty or missing.
 
 set -euo pipefail
@@ -17,9 +17,10 @@ if [ ! -d "$PLANS_DIR" ]; then
   exit 1
 fi
 
-LATEST="$(find "$PLANS_DIR" -maxdepth 1 -type f -name '*.md' -print0 \
-  | xargs -0 ls -t 2>/dev/null \
-  | head -n 1)"
+# Filenames are YYYY-MM-DD-<slug>.md, so lexicographic order == date order.
+# Sorting by name (not mtime) survives fresh clones, which reset mtimes.
+LATEST="$(find "$PLANS_DIR" -maxdepth 1 -type f -name '*.md' \
+  | sort | tail -n 1)"
 
 if [ -z "$LATEST" ]; then
   echo "error: no plan docs in $PLANS_DIR — run /mstack-plan first" >&2

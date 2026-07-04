@@ -57,8 +57,10 @@ if jq empty plugins/mstack/mstack.schema.json >/dev/null 2>&1; then ok "json mst
 
 # 7. Resolver smoke test (runs in an empty temp dir → must emit valid JSON with expected keys)
 tmp=$(mktemp -d)
-if out=$("$res" 2>/dev/null) && echo "$out" | jq -e '.paths.designTokens and .commands.typecheck and ._resolved.layout' >/dev/null 2>&1; then
-  ok "resolver emits valid config"
+res_abs="$PWD/$res"
+if out=$(cd "$tmp" && "$res_abs" 2>/dev/null) \
+   && echo "$out" | jq -e '.paths.designTokens and .commands.typecheck and ._resolved.layout and .devUrl and .conventions.orm and (.conventions.hardRules | type == "array")' >/dev/null 2>&1; then
+  ok "resolver emits valid config (empty-dir run)"
 else
   err "resolver did not emit expected JSON keys"
 fi
