@@ -49,8 +49,19 @@ where you propose new code lives.
    - `.mstack/design-system/DESIGN.md` if present (so the plan respects
      locked design decisions). If the feature is UI-heavy and no
      `DESIGN.md` exists, suggest `/mstack-design-system` first.
+   - `paths.todos` (default `.mstack/TODOS.md`) if present — open items that
+     touch this feature's area are candidates to fold into scope; surface
+     them in step 2's questions.
+   - `paths.prd` and `paths.roadmap` if present — the PRD pre-answers
+     persona/wedge (confirm, don't re-ask cold); the roadmap tells you
+     whether this feature is expected or a detour.
+   - The last ~20 lines of `.mstack/learnings.jsonl` if present — prior
+     constraints and gotchas that should shape the approach.
 
 2. **Ask the user** (one batch via AskUserQuestion):
+   If a PRD exists, present its persona/wedge as pre-filled defaults to
+   confirm instead of open questions. If open TODOS items match this
+   feature's area, include a multi-select "fold these in?" question.
    - **Persona** — who is this for?
    - **Wedge** — what's the specific user pain this solves?
    - **Out of scope** — what are we explicitly NOT doing?
@@ -63,11 +74,21 @@ where you propose new code lives.
    `${CLAUDE_PLUGIN_ROOT}/shared/templates/plan.md`. Slug format:
    `YYYY-MM-DD-<lowercase-hyphen-slug>.md` (e.g. `2026-05-12-billing-portal.md`).
 
-5. **Append a learning** if something non-obvious came up (a constraint
+5. **Sync the backlog and roadmap.**
+   - For each "Out (deferred)" scope item worth remembering, run
+     `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-todo.sh "plan <slug>" "<item>"`.
+   - If any TODOS item was folded into this plan, check it off in the todos
+     file with a pointer: `— absorbed by plans/<slug>.md`.
+   - If a roadmap exists (`paths.roadmap`) and this feature isn't on it, ask
+     the user whether to add it under `## Now` with a link to the plan; do so
+     if confirmed. If it is on the roadmap under Next/Later, move it to
+     `## Now`.
+
+6. **Append a learning** if something non-obvious came up (a constraint
    discovered, a rejected approach worth remembering, a deviation from project
    defaults). Use `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-learning.sh`.
 
-6. **Hand off**: tell the user "Plan written to <path>. Run /mstack-review next."
+7. **Hand off**: tell the user "Plan written to <path>. Run /mstack-review next."
 
 ## Plan doc shape
 

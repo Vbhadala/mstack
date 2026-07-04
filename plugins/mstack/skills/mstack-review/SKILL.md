@@ -96,9 +96,13 @@ value for the actual project** (e.g. route globs `apps/web/src/app/**` become
     - `apps/web/src/components/**/*.tsx` (excluding `marketing/*` — that's
       content, not UI shell)
     - Any **new** route under `apps/web/src/app/`
+    - `<paths.mobileApp>/app/**/*.tsx` (Expo Router screen added or modified;
+      when the layout is `expo`, the glob is `app/**/*.tsx` at repo root)
+    - `<paths.mobileApp>/src/components/**/*.tsx`
 
     …**AND** either (a) the count of such files is **≥3**, OR (b) any file in
-    the set is a **new** `page.tsx`. Otherwise **UI-Significant: no**.
+    the set is a **new** `page.tsx` or a **new** Expo Router screen.
+    Otherwise **UI-Significant: no**.
 
     This flag is the single source of truth for the optional `/mstack-mockup`
     gate in the main chain — `/mstack-auto` and the manual chain both read it.
@@ -115,6 +119,11 @@ value for the actual project** (e.g. route globs `apps/web/src/app/**` become
    constraint discovered while reading code, a deviation from project defaults,
    a rejected approach worth remembering. Use
    `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-learning.sh`.
+
+8b. **Capture deferrals.** Every Concern decided as "defer" and every
+    Suggestion explicitly deferred goes to the backlog:
+    `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-todo.sh "review <slug>" "<item>"`.
+    A deferral that lives only inside the review doc is a lost work item.
 
 9. **Hand off** based on `UI-Significant`:
    - If `yes`: tell the user "Review written to <path>. Recommended next:

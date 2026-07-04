@@ -142,6 +142,10 @@ the user chose to defer), the "Recommended next step" line MUST suggest:
 This is a *suggestion*, not an auto-spawn — the user invokes it. `/mstack-debug`
 will read the issue from this run's `report.md` and do a focused RCA.
 
+**Backlog capture.** Every issue that ended `⊘ deferred` (and any `⏸ paused`
+issue the user chose not to pursue now) must be appended to the todo backlog:
+`${CLAUDE_PLUGIN_ROOT}/shared/bin/append-todo.sh "qa <run> issue <N>" "<title>"`.
+
 Append a learning if anything non-obvious surfaced (e.g. a flaky selector,
 a hidden auth requirement). Use `append-learning.sh`.
 
