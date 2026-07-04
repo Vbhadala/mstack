@@ -1,8 +1,8 @@
 # mstack
 
 The mstack agent workflow as a Claude Code plugin: an opinionated
-**plan → review → code** pipeline plus QA, debugging, mockups, design-system,
-UX audit, and research — installable into any repo and versioned independently
+**init → plan → review → code → ship** pipeline plus QA, debugging, mockups,
+design-system, UX audit, research, and status — installable into any repo and versioned independently
 of the app it runs in.
 
 ## Skills
@@ -19,6 +19,9 @@ of the app it runs in.
 | `/mstack-design-system` | **yes** | Formulate/rebrand tokens → design source of truth |
 | `/mstack-ux-audit` | gated | UX review against the design system |
 | `/mstack-research` | no | Parallel tech-choice research with sources |
+| `/mstack-init` | no* | Onboard a repo: detection → minimal config → PRD/ROADMAP/TODOS (*writes only `.mstack/` + optional `AGENTS.md`) |
+| `/mstack-status` | no | Regenerate `.mstack/STATUS.md` — pipeline state + next command per feature |
+| `/mstack-ship` | gated | Verify gate → push → PR from review + ledger → roadmap/TODOS close-out |
 
 ## Install
 

@@ -1,11 +1,17 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "mstack",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Opinionated plan -> review -> code agent workflow for app projects, plus QA, debug, mockup, design-system, ux-audit and research skills.",
   "author": {
     "name": "mstack"
   },
   "homepage": "https://github.com/vbhadala/mstack",
-  "keywords": ["mstack", "workflow", "planning", "qa", "design-system"]
+  "keywords": [
+    "mstack",
+    "workflow",
+    "planning",
+    "qa",
+    "design-system"
+  ]
 }

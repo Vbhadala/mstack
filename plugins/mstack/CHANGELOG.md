@@ -4,6 +4,59 @@ All notable changes to the `mstack` plugin. Format: [Keep a Changelog](https://k
 This plugin follows SemVer; the **Contract** sub-section flags changes to the
 [skill ↔ project contract](./CONTRACT.md).
 
+## [0.3.0] — Init, contract hardening, pipeline close-out
+
+### Added
+- `/mstack-init` — repo onboarding: detection → confirmation → minimal
+  `.mstack/config.json` (overrides only) → product docs (PRD / ROADMAP /
+  TODOS), adopting existing files in place via `paths.*`.
+- `/mstack-status` — regenerates a generated-only `.mstack/STATUS.md`
+  (per-feature pipeline table + next command) via
+  `shared/bin/pipeline-status.sh`.
+- `/mstack-ship` — final build/typecheck/lint gate, push, PR generated from
+  the review doc + task ledger, plan status → `shipped`, roadmap item →
+  Shipped, follow-ups → TODOS.
+- `shared/bin/append-todo.sh` — dedup'd capture into the todo backlog;
+  wired into plan (deferred scope), review (deferred concerns), qa
+  (deferred issues), debug (out-of-scope bugs), code (paused/skipped tasks,
+  follow-ups), ship (post-ship follow-ups).
+- `shared/templates/prd.md` + `shared/templates/roadmap.md`.
+- `scripts/test.sh` (fixture-based script tests), `scripts/release.sh`
+  (synced version bump), GitHub Actions `validate` workflow.
+
+### Changed
+- Skills stopped assuming Drizzle/Next.js: hard rules now resolve from
+  `conventions.hardRules` + ORM discipline from `conventions.orm`; dev-server
+  checks use the resolved `devUrl`; commit trailers no longer pin a model
+  name; plugin-escaping relative doc links removed.
+- `/mstack-plan` reads TODOS / PRD / ROADMAP / recent learnings before
+  consulting; `/mstack-review`'s UI-Significant heuristic now counts Expo /
+  mobile screens.
+- `find-latest-plan.sh` / `find-latest-review.sh` pick the newest file by
+  filename date prefix (clone-safe) instead of mtime.
+- `validate.sh`: resolver smoke test actually runs in an empty temp dir;
+  new checks for plugin-escaping links and pinned model trailers.
+
+### Contract
+- **New resolver keys** (all auto-detected, all overridable):
+  `devUrl` (expo → `http://localhost:8081`, else `:3000`),
+  `paths.{prd,roadmap,todos}` (defaults `.mstack/product/PRD.md`,
+  `.mstack/product/ROADMAP.md`, `.mstack/TODOS.md`),
+  `conventions.orm` (`drizzle|prisma|none`, from deps),
+  `conventions.hardRules` (string array, default `[]`),
+  `_resolved.hasExpo`.
+- **New layout value `expo`** for standalone Expo apps (expo dep +
+  `app.json`/`app.config.*`): `mobileApp: "."`, dev command uses the `start`
+  script.
+- **Default layout for undetectable repos changed `monorepo` → `flat`.**
+  Repos relying on the old fallback should add `.mstack/config.json`.
+- **New repo-owned artifacts:** `.mstack/TODOS.md` (append-todo.sh),
+  `.mstack/STATUS.md` (generated, never hand-edited),
+  `.mstack/product/{PRD,ROADMAP}.md` (optional, created/adopted by
+  `/mstack-init`).
+- **Plan status flow extended:** `draft → reviewed → implemented → shipped`
+  (`/mstack-ship` sets `shipped`).
+
 ## [0.2.0] — Layer 2: config-driven portability
 
 ### Added
