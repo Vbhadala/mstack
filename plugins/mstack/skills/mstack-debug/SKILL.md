@@ -1,13 +1,15 @@
 ---
 name: mstack-debug
 description: |
-  Reactive debugging: reproduce a reported bug, find the root cause, write a
-  failing test that proves the hypothesis, and produce a fix proposal that
-  /mstack-code can consume. Never edits source code. Reads from a /mstack-qa
-  report when `--from-qa <run>` is passed.
-  Use when the user says "debug this", "X is broken", "users report Y", "500
-  on Z", "investigate this bug", or invokes /mstack-debug. For broad scenario
-  testing → /mstack-qa instead.
+  Deep root-cause analysis for bugs that resist a quick fix: reproduce,
+  investigate, write a failing test that proves the hypothesis, and produce
+  a verified fix proposal that /mstack-fix executes (or /mstack-plan when
+  the fix implies real scope). Never edits source code. Usually reached by
+  escalation from /mstack-fix or from a /mstack-qa report (--from-qa);
+  invoke directly for mysteries ("users report intermittent Y").
+  Use when the user says "debug this", "investigate this bug", "intermittent
+  500 on Z", or invokes /mstack-debug. For a bug with an evident fix →
+  /mstack-fix; for broad scenario testing → /mstack-qa.
 allowed-tools:
   - Read
   - Glob
@@ -26,7 +28,8 @@ allowed-tools:
 Reactive RCA for a specific reported bug. Five phases: reproduce → investigate
 → verify hypothesis → propose fix → approval gate. **No source code edits.**
 Output goes to `.mstack/debug/<YYYY-MM-DD-HHMM-slug>/` and is consumed by
-`/mstack-code`.
+`/mstack-fix` (small, contained fixes) or `/mstack-plan` (fixes that imply
+real scope).
 
 ## Iron Law
 
@@ -37,7 +40,10 @@ or pause and ask the user.
 
 ## Phase 1 — Reproduce
 
-1. **Source the bug report.** Three paths:
+1. **Source the bug report.** Four paths:
+   - **Escalated from `/mstack-fix`** → read the fix run's report at
+     `.mstack/fixes/<slug>.md` (`Status: escalated`) — symptom, repro, and
+     what the bounded look already ruled out are your head start.
    - `--from-qa <run>` arg → read the issue list from
      `.mstack/qa/<run>/report.md` and ask the user which issue to debug.
    - Plain `/mstack-debug` with a description → ask the user (AskUserQuestion)
@@ -108,7 +114,7 @@ include:
 - **What to change** — file paths + the change in prose (not a diff).
 - **Why it fixes the cause** — one line linking the change to the failing
   assertion.
-- **Project hard-rule reminders** for `/mstack-code` if relevant: quote the
+- **Project hard-rule reminders** for `/mstack-fix` if relevant: quote the
   resolved `conventions.hardRules` entries that apply, plus the ORM
   discipline for `conventions.orm` (drizzle: generated migrations, never
   `db:push`; prisma: `prisma migrate dev`, never `db push`), plus any
@@ -124,16 +130,20 @@ include:
 
 ## Phase 5 — Approval gate
 
-AskUserQuestion with three options:
+AskUserQuestion with four options:
 
-- **Run /mstack-code on this debug doc** — exits the skill; user invokes
-  `/mstack-code .mstack/debug/<slug>/report.md` next.
+- **Hand to /mstack-fix** — the fix is small and contained (within
+  `/mstack-fix`'s size budget): user invokes `/mstack-fix --from-debug
+  <slug>` next; the failing spec becomes its acceptance criterion.
+- **Route to /mstack-plan** — the fix implies schema changes, new deps, or
+  feature-scale work; the plan references this report.
 - **Hand to me for manual fix** — exits; user takes it from here.
 - **Investigate further** — loop back to Phase 2 with user-provided hint.
 
-**Never edit source code.** That is `/mstack-code`'s sole job. This skill ends
-with the report written and `report.md` `Status:` set to one of
-`ready-for-code | manual | reopened`.
+**Never edit source code.** That belongs to the code-editing skills
+(`/mstack-fix`, `/mstack-code`). This skill ends with the report written
+and `report.md` `Status:` set to one of
+`ready-for-fix | ready-for-plan | manual | reopened`.
 
 Append a learning via `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-learning.sh` if
 the RCA surfaced something non-obvious (a hidden coupling, a stale cache, a
@@ -145,9 +155,9 @@ framework gotcha).
 # Debug — <symptom one-liner>
 
 **Started:** YYYY-MM-DD HH:MM
-**Source:** <user-report | qa/<run>#issue-N>
+**Source:** <user-report | qa/<run>#issue-N | fix/<slug>>
 **Env:** <localhost | staging>
-**Status:** investigating | hypothesis-verified | ready-for-code | manual | reopened
+**Status:** investigating | hypothesis-verified | ready-for-fix | ready-for-plan | manual | reopened
 **Investigator:** /mstack-debug
 
 ## Symptom
@@ -175,7 +185,7 @@ framework gotcha).
 
 **Failing test:** specs/repro.spec.ts — asserts <X> which fails because <Y>.
 
-## Fix plan (for /mstack-code)
+## Fix plan (for /mstack-fix)
 
 **Files to change:**
 - `path/to/file.ts` — <what change, in prose>
@@ -198,7 +208,7 @@ framework gotcha).
 ## Anti-patterns
 
 - **Don't propose a fix without the failing test.** No test = no understanding.
-- **Don't edit source code.** Even "tiny" edits. Hand off to `/mstack-code`.
+- **Don't edit source code.** Even "tiny" edits. Hand off to `/mstack-fix`.
 - **Don't run the project's permanent e2e suite** for repro. Write a focused
   spec under `specs/` and run only that.
 - **Don't expand scope.** If you find a second bug, note it in the report's

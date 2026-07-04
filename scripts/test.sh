@@ -296,6 +296,103 @@ else
 fi
 rm -rf "$r"
 
+# resolver: tokenDrift auto off / warn by DESIGN.md, block via config
+r=$(make_repo)
+mkdir -p "$r/src"; touch "$r/package-lock.json"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.tokenDrift' off "resolver: tokenDrift off without DESIGN.md"
+mkdir -p "$r/.mstack/design-system"; echo "# design" > "$r/.mstack/design-system/DESIGN.md"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.tokenDrift' warn "resolver: tokenDrift warn with DESIGN.md"
+mkdir -p "$r/.mstack"
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.tokenDrift' block "resolver: tokenDrift config override"
+rm -rf "$r"
+
+# token-drift: off mode is silent and exits 0
+r=$(make_repo)
+mkdir -p "$r/src"; touch "$r/package-lock.json"
+printf 'export const x = { color: "#ff0000" }\n' > "$r/src/foo.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>"$r/e"); then
+  ok "drift: off exits 0"
+else
+  err "drift: off exits 0"
+fi
+if [ -s "$r/e" ]; then err "drift: off is silent"; else ok "drift: off is silent"; fi
+
+# token-drift: warn mode reports on stderr, exits 0
+mkdir -p "$r/.mstack/design-system"; echo "# d" > "$r/.mstack/design-system/DESIGN.md"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>"$r/e"); then
+  ok "drift: warn exits 0"
+else
+  err "drift: warn exits 0"
+fi
+assert_contains "$r/e" "src/foo.ts" "drift: warn reports the file"
+
+# token-drift: block mode exits 1 on findings
+mkdir -p "$r/.mstack"
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>/dev/null); then
+  err "drift: block exits 1 on findings"
+else
+  ok "drift: block exits 1 on findings"
+fi
+
+# token-drift: the token file itself is excluded
+echo '{ "conventions": { "tokenDrift": "block" }, "paths": { "designTokens": "src/foo.ts" } }' > "$r/.mstack/config.json"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>/dev/null); then
+  ok "drift: token file excluded"
+else
+  err "drift: token file excluded"
+fi
+
+# token-drift: clean file passes block mode
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+printf 'export const y = 1\n' > "$r/src/clean.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/clean.ts 2>/dev/null); then
+  ok "drift: clean file passes block"
+else
+  err "drift: clean file passes block"
+fi
+rm -rf "$r"
+
+# token-drift: multiple file args are all checked (regression: FILES="$*" bug)
+r=$(make_repo)
+mkdir -p "$r/src" "$r/.mstack"; touch "$r/package-lock.json"
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+printf 'const a = "#ff0000"\n' > "$r/src/a.ts"
+printf 'const b = "#00ff00"\n' > "$r/src/b.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/a.ts src/b.ts 2>"$r/e"); then
+  err "drift: multi-file block exits 1"
+else
+  ok "drift: multi-file block exits 1"
+fi
+assert_contains "$r/e" "src/a.ts" "drift: multi-file reports first file"
+assert_contains "$r/e" "src/b.ts" "drift: multi-file reports second file"
+
+# token-drift: hsl(var(--token)) is compliant, not drift
+printf 'const c = { color: "hsl(var(--primary))" }\n' > "$r/src/c.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/c.ts 2>/dev/null); then
+  ok "drift: var() color functions pass block"
+else
+  err "drift: var() color functions pass block"
+fi
+rm -rf "$r"
+
+# token-drift: raw literal on the same line as a compliant var() call is still caught
+r=$(make_repo)
+mkdir -p "$r/src" "$r/.mstack"; touch "$r/package-lock.json"
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+printf 'const d = { a: "hsl(var(--primary))", b: "#123456" }\n' > "$r/src/d.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/d.ts 2>"$r/e"); then
+  err "drift: same-line raw hex caught"
+else
+  ok "drift: same-line raw hex caught"
+fi
+assert_contains "$r/e" "src/d.ts" "drift: same-line finding reported"
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi

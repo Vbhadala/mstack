@@ -26,7 +26,8 @@ allowed-tools:
 
 Release and operate an Expo app: preflight → OTA-vs-build decision →
 runway → verify → report. **No app source edits** — if the preflight finds
-a code problem, hand it to `/mstack-plan` or `/mstack-debug`.
+a code problem, hand it to `/mstack-fix` (or `/mstack-plan` when the fix
+implies real scope).
 
 ## Gate — Expo target required
 
@@ -72,7 +73,8 @@ Initialise `.mstack/releases/<YYYY-MM-DD-HHMM>/report.md` (scaffold below).
 
 Run every check; the report records each with its evidence. ANY failure =
 no-go: stop, report, and route the fix (config fixes you may propose;
-source fixes go to `/mstack-plan` or `/mstack-debug`). **Setup-mode
+source fixes go to `/mstack-fix`, or `/mstack-plan` when they imply real
+scope). **Setup-mode
 exception:** on a project with no release infra yet, checks 3–6 are
 EXPECTED to fail — in `setup` mode their findings become the setup
 worklist instead of a no-go.
@@ -228,7 +230,7 @@ handles the web PR side.
 ## Anti-patterns
 
 - **Don't edit app source code.** Preflight findings route to
-  `/mstack-plan` / `/mstack-debug`; config-file changes (app.json,
+  `/mstack-fix` / `/mstack-plan`; config-file changes (app.json,
   eas.json) only in `setup` mode with per-file confirmation.
 - **Don't publish an OTA to production without a preview-channel pass.**
 - **Don't hand-write `.eas/workflows/*.yml` without schema validation**

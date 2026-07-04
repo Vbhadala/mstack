@@ -33,6 +33,7 @@ skill uses:
 - `paths.designTokens` [monorepo default `packages/config/src/design.ts`]
 - `paths.globalsCss` [default `apps/web/src/app/globals.css`]
 - `paths.brandSource` [default `packages/config/src/brand.ts`]
+- `_resolved.hasExpo` — switches native-frame rendering on (Phase 3)
 
 **Throughout this skill, treat every `packages/config/...`, `apps/web/...`,
 `apps/mobile/...`, or legacy `src/config/...` path literal — and every
@@ -81,6 +82,8 @@ In parallel:
 - `.mstack/design-system/DESIGN.md` if present — the locked design system
 - `paths.prd` if the file exists — personas and voice constraints that
   should shape copy and layout choices
+- `${CLAUDE_PLUGIN_ROOT}/shared/references/frontend-craft.md` — the craft
+  rules every variant must satisfy (hierarchy, states, copy, anti-slop)
 
 The mockups must use the actual brand tokens. No fake colours, no fake
 typefaces.
@@ -130,6 +133,16 @@ swaps. Examples:
 - **Layout density** → cards vs table vs single-column list
 - **Hierarchy** → hero-led vs grid-led vs sidebar-led
 - **Visual style** → minimalist vs editorial vs dashboard
+
+**Native screens (Expo).** When `_resolved.hasExpo` and the screen being
+designed is a native app screen (not a web page), render each variant
+inside a device frame instead of the responsive web layout: 390×844
+viewport, drawn status bar and home indicator, safe-area insets respected,
+and native chrome (header, tab bar) following platform conventions — and
+the `building-native-ui` skill's rules when it's available in the
+environment. Still plain standalone HTML: these frames approximate native
+for layout/hierarchy/copy decisions; the implementation follows the
+project's native UI conventions, not this HTML's CSS.
 
 `COMPARE.html` is a simple page with N iframes side-by-side and the variant
 name above each, so the user can scan all options in one view.

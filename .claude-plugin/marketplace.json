@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Claude Code plugins. Add with `/plugin marketplace add vbhadala/mstack`.",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
       "name": "mstack",
       "source": "./plugins/mstack",
-      "description": "Opinionated init -> plan -> review -> code -> ship agent workflow for app projects, plus QA, debug, mockup, design-system, ux-audit, research, status and Expo release skills.",
-      "version": "0.4.0",
+      "description": "Opinionated init -> plan -> review -> code -> ship agent workflow for app projects, plus QA, quick-fix, debug, mockup, design-system, ux-audit, research, status and Expo release skills.",
+      "version": "0.5.0",
       "category": "workflow",
       "keywords": [
         "mstack",

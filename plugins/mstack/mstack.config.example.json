@@ -31,7 +31,8 @@
     "serviceLayer": "packages/services",
     "apiPrefix": "/api/v1",
     "orm": "drizzle",
-    "hardRules": []
+    "hardRules": [],
+    "tokenDrift": "warn"
   },
 
   "expo": {

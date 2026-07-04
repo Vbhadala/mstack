@@ -71,6 +71,12 @@ Classify:
   shadcn / project defaults, no `DESIGN.md`. The user has named their
   product but not yet locked the look.
 - **evolve** — `DESIGN.md` exists. Refining or extending what's there.
+- **adopt** — the file at the resolved `paths.designTokens` does not exist:
+  a legacy repo with no token architecture at all. The flow differs — see
+  "Adopt mode (legacy repos)" below: extract before propose, and never
+  rewrite call sites. Adopt applies only when the repo has substantial
+  existing UI source; a truly fresh project with no tokens AND no real
+  UI yet is **from-scratch**, not adopt.
 
 Tell the user which mode you're in and let them override.
 
@@ -234,6 +240,36 @@ the primary won't load on Android, a deliberate AA exemption, a
 reference that was rejected because its palette wouldn't dark-mode
 cleanly.
 
+## Adopt mode (legacy repos)
+
+Extract-only: this mode CREATES the token layer and documents it; migrating
+existing call sites is a separate, reviewed pipeline run.
+
+1. **Extract the de-facto system.** Scan the source (Grep for hex/rgb/hsl
+   literals, `font-family`, `borderRadius`/`border-radius`, shadow values;
+   skip node_modules, tests, generated files). Cluster the findings: the
+   top ~8 colors with usage counts, font stacks, radius values, spacing
+   outliers. Present this as "what the codebase already believes" — it is
+   the reference input for Phase 2 (alongside any refs the user adds).
+2. **Run Phases 2–4 as normal**, with the extraction as the baseline. The
+   proposal maps every extracted cluster to a token (e.g. "#1a73e8 ×47 →
+   `--primary`").
+3. **Phase 5 differs:** create the three files at the resolved paths as NEW
+   files (design tokens, globals CSS with `:root`/`.dark` variables, brand
+   source), matching the template format so every other skill's
+   expectations hold. **Touch nothing else** — existing components keep
+   their hardcoded values for now.
+4. **Phase 6 as normal** (DESIGN.md + previews). Note: once DESIGN.md
+   exists, `conventions.tokenDrift` auto-resolves to `warn`, so new code
+   starts getting nudged toward the tokens immediately.
+5. **Generate the migration plan.** Write
+   `.mstack/plans/<YYYY-MM-DD>-token-migration.md` (`Status: draft`, plan
+   template shape) whose tasks are the usage clusters from step 1, ordered
+   by blast radius (smallest first), each with file counts and the target
+   token. Hand off: "Token layer created. Run `/mstack-review` on the
+   migration plan to schedule the call-site migration through the
+   pipeline."
+
 ## Anti-patterns
 
 - **Don't write tokens before Phase 5.** Phases 2–4 are consultation
@@ -257,3 +293,6 @@ cleanly.
 - **Don't run this skill as a colour-swap shortcut.** If the user just
   wants to tweak one token, do an `Edit` to `design.ts` + `globals.css`
   + `pnpm gen:mobile-tw` directly; don't drag them through 7 phases.
+- **Don't rewrite call sites in adopt mode.** Creating the token layer is
+  this skill's job; migrating hundreds of usages is a reviewed
+  plan → review → code run with atomic commits, not a design side effect.
