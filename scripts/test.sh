@@ -219,7 +219,7 @@ printf '# Plan: billing\n\n**Status:** reviewed\n' > "$r/.mstack/plans/2026-07-0
 printf '# Review: billing\n\n**Status:** approved\n' > "$r/.mstack/reviews/2026-07-01-billing.md"
 printf '**Status:** in_progress\n\n- [x] **Task 1:** a\n- [ ] **Task 2:** b\n' > "$r/.mstack/code/2026-07-01-billing/tasks.md"
 printf '# Plan: onboarding\n\n**Status:** draft\n' > "$r/.mstack/plans/2026-07-02-onboarding.md"
-out="$(cd "$r" && "$BIN/pipeline-status.sh")"
+out="$(cd "$r" && "$BIN/pipeline-status.sh")" && ok "pipeline-status: exit 0 without qa runs" || err "pipeline-status: nonzero exit without qa runs"
 echo "$out" | grep -q '2026-07-01-billing | reviewed | approved | in_progress (1/2) | /mstack-code' \
   && ok "pipeline-status: billing row" || err "pipeline-status: billing row missing/wrong: $out"
 echo "$out" | grep -q '2026-07-02-onboarding | draft | — | — | /mstack-review' \

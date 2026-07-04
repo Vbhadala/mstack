@@ -73,7 +73,9 @@ if [ -f "$TODOS" ]; then
   echo "**Open todos:** $open_n (see \`${TODOS#"$ROOT"/}\`)"
 fi
 
-latest_qa="$(find "$M/qa" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | tail -1)"
+latest_qa="$(find "$M/qa" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | tail -1 || true)"
 if [ -n "$latest_qa" ] && [ -f "$latest_qa/report.md" ]; then
   echo "**Latest QA:** $(basename "$latest_qa") — $(field "$latest_qa/report.md" Status)"
 fi
+
+exit 0
