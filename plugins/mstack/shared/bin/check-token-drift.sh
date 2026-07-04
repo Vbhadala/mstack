@@ -13,6 +13,8 @@
 # Scans .ts/.tsx/.js/.jsx/.css/.scss, skipping the resolved token files
 # (designTokens, globalsCss, brandSource), tests/specs, tailwind configs.
 # Detects: hex colors (#fff, #ff0000, #ff0000cc), rgb()/rgba()/hsl()/hsla().
+# Color functions wrapping var() (e.g. hsl(var(--primary))) are
+# token-compliant and ignored.
 
 set -euo pipefail
 
@@ -51,7 +53,9 @@ while IFS= read -r f; do
   abs="$f"
   if [ ! -f "$abs" ]; then abs="$ROOT/$rel"; fi
   if [ ! -f "$abs" ]; then continue; fi
-  hits="$(grep -nE '#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?\b|#[0-9a-fA-F]{3}\b|rgba?\(|hsla?\(' "$abs" 2>/dev/null | grep -vE '(rgba?|hsla?)\( *var\(' || true)"
+  # Strip token-compliant color functions (hsl(var(--x)), rgb(var(--y) / .5))
+  # first — sed keeps line count, so a raw literal sharing the line still reports.
+  hits="$(sed -E 's/(rgba?|hsla?)\( *var\([^)]*\)[^)]*\)//g' "$abs" 2>/dev/null | grep -nE '#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?\b|#[0-9a-fA-F]{3}\b|rgba?\(|hsla?\(' || true)"
   if [ -n "$hits" ]; then
     while IFS= read -r line; do
       echo "token-drift: $rel:$line" >&2

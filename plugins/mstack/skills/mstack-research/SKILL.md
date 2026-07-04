@@ -7,7 +7,8 @@ description: |
   deep) gate cost. Never edits code, never installs deps.
   Use when the user says "research X", "should we use Y or Z", "compare A vs
   B", "look up best practices for", or invokes /mstack-research. For internal
-  bug investigation → /mstack-debug instead.
+  bug investigation → /mstack-fix instead (it escalates to /mstack-debug
+  when the cause isn't evident).
 allowed-tools:
   - Read
   - Glob
