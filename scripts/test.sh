@@ -219,13 +219,22 @@ printf '# Plan: billing\n\n**Status:** reviewed\n' > "$r/.mstack/plans/2026-07-0
 printf '# Review: billing\n\n**Status:** approved\n' > "$r/.mstack/reviews/2026-07-01-billing.md"
 printf '**Status:** in_progress\n\n- [x] **Task 1:** a\n- [ ] **Task 2:** b\n' > "$r/.mstack/code/2026-07-01-billing/tasks.md"
 printf '# Plan: onboarding\n\n**Status:** draft\n' > "$r/.mstack/plans/2026-07-02-onboarding.md"
-out="$(cd "$r" && "$BIN/pipeline-status.sh")" && ok "pipeline-status: exit 0 without qa runs" || err "pipeline-status: nonzero exit without qa runs"
-echo "$out" | grep -q '2026-07-01-billing | reviewed | approved | in_progress (1/2) | /mstack-code' \
-  && ok "pipeline-status: billing row" || err "pipeline-status: billing row missing/wrong: $out"
-echo "$out" | grep -q '2026-07-02-onboarding | draft | — | — | /mstack-review' \
-  && ok "pipeline-status: draft row" || err "pipeline-status: draft row missing/wrong"
-echo "$out" | grep -q 'Do not edit' \
-  && ok "pipeline-status: generated header" || err "pipeline-status: generated header missing"
+if out="$(cd "$r" && "$BIN/pipeline-status.sh")"; then ok "pipeline-status: exit 0 without qa runs"; else err "pipeline-status: nonzero exit without qa runs"; fi
+if echo "$out" | grep -q '2026-07-01-billing | reviewed | approved | in_progress (1/2) | /mstack-code'; then
+  ok "pipeline-status: billing row"
+else
+  err "pipeline-status: billing row missing/wrong: $out"
+fi
+if echo "$out" | grep -q '2026-07-02-onboarding | draft | — | — | /mstack-review'; then
+  ok "pipeline-status: draft row"
+else
+  err "pipeline-status: draft row missing/wrong"
+fi
+if echo "$out" | grep -q 'Do not edit'; then
+  ok "pipeline-status: generated header"
+else
+  err "pipeline-status: generated header missing"
+fi
 rm -rf "$r"
 
 # pipeline-status: counts open todos
@@ -234,15 +243,21 @@ mkdir -p "$r/.mstack/plans"
 printf '# Plan: x\n\n**Status:** draft\n' > "$r/.mstack/plans/2026-07-01-x.md"
 printf '# TODOS\n\n- [ ] one\n- [ ] two\n- [x] done\n' > "$r/.mstack/TODOS.md"
 out="$(cd "$r" && "$BIN/pipeline-status.sh")"
-echo "$out" | grep -q 'Open todos:\*\* 2' \
-  && ok "pipeline-status: todo count" || err "pipeline-status: todo count wrong"
+if echo "$out" | grep -q 'Open todos:\*\* 2'; then
+  ok "pipeline-status: todo count"
+else
+  err "pipeline-status: todo count wrong"
+fi
 rm -rf "$r"
 
 # pipeline-status: graceful with no .mstack
 r=$(make_repo)
 out="$(cd "$r" && "$BIN/pipeline-status.sh")"
-echo "$out" | grep -q 'No .mstack directory' \
-  && ok "pipeline-status: empty repo message" || err "pipeline-status: empty repo message missing"
+if echo "$out" | grep -q 'No .mstack directory'; then
+  ok "pipeline-status: empty repo message"
+else
+  err "pipeline-status: empty repo message missing"
+fi
 rm -rf "$r"
 
 # --- summary ---

@@ -36,7 +36,8 @@ for d in plugins/mstack/skills/*/; do
   fmname=$(echo "$fm" | sed -n 's/^name:[[:space:]]*//p' | head -1)
   [ "$fmname" = "$name" ] || err "skill $name: frontmatter name '$fmname' != dir name"
 done
-ok "skills frontmatter checked ($(ls -1d plugins/mstack/skills/*/ | wc -l | tr -d ' ') skills)"
+skill_count=$(find plugins/mstack/skills -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+ok "skills frontmatter checked ($skill_count skills)"
 
 # 4. No stale hardcoded paths in skills (should resolve via \${CLAUDE_PLUGIN_ROOT})
 if grep -rn '\.claude/skills/' plugins/mstack/skills >/dev/null 2>&1; then
@@ -62,7 +63,7 @@ done
 
 # 6. Resolver present and config schema valid
 res="plugins/mstack/shared/bin/resolve-config.sh"
-[ -f "$res" ] && ok "resolver present" || err "missing $res"
+if [ -f "$res" ]; then ok "resolver present"; else err "missing $res"; fi
 if jq empty plugins/mstack/mstack.schema.json >/dev/null 2>&1; then ok "json mstack.schema.json"; else err "mstack.schema.json does not parse"; fi
 
 # 7. Resolver smoke test (runs in an empty temp dir → must emit valid JSON with expected keys)
