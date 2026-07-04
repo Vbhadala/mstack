@@ -98,7 +98,7 @@ If declined, exit cleanly with status `report-only`.
 For each approved issue:
 
 1. TaskUpdate `in_progress`.
-2. Make the fix. Honour the project's hard rules from `AGENTS.md` (no raw
+2. Make the fix. Enforce each resolved `conventions.hardRules` entry verbatim, then honour the project's hard rules from `AGENTS.md` (no raw
    `process.env` or hardcoded brand strings outside the brand/config source —
    `paths.brandSource` and its directory; only enforce the brand-string rule
    when `conventions.brandStringLiteralRule` is set — plus `import

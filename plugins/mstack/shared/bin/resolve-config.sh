@@ -150,7 +150,7 @@ DEFAULTS="$(jq -n \
 
 # --- merge user config on top (explicit wins) -------------------------------------
 CFG="$ROOT/.mstack/config.json"
-if [ -f "$CFG" ] && jq empty "$CFG" >/dev/null 2>&1; then
+if [ -f "$CFG" ] && jq -e 'type == "object"' "$CFG" >/dev/null 2>&1; then
   jq -r 'keys - ["$schema","_comment","_flatLayoutExample","packageScope","devUrl","paths","commands","conventions"] | .[]' "$CFG" \
     | while IFS= read -r k; do
         echo "warning: unknown config key \"$k\" in .mstack/config.json — no skill reads it (typo?)" >&2
@@ -159,7 +159,7 @@ if [ -f "$CFG" ] && jq empty "$CFG" >/dev/null 2>&1; then
     <(printf '%s' "$DEFAULTS") "$CFG"
 else
   if [ -f "$CFG" ]; then
-    echo "warning: $CFG is not valid JSON — using auto-detected defaults" >&2
+    echo "warning: $CFG is not a JSON object — using auto-detected defaults" >&2
   fi
   printf '%s\n' "$DEFAULTS"
 fi

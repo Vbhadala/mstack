@@ -57,6 +57,9 @@ value for the actual project** (e.g. route globs `apps/web/src/app/**` become
    - The specific files the plan says it'll touch (existing ones, via Read)
    - Sibling files in `src/features/` if the plan adds a new feature module
    - `src/config/` if the plan touches brand/design/env
+   - `paths.prd` if the file exists — check the plan against the PRD's
+     non-goals and personas; a plan that contradicts a non-goal is a Blocker
+     until the user resolves it (change the plan or update the PRD)
 
 3. **Critique the plan.** Check for:
    - **Scope clarity** — are in/out lists explicit and tight?

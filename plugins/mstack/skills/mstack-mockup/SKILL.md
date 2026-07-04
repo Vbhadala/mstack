@@ -79,6 +79,8 @@ In parallel:
 - `components.json` (shadcn) and any existing screens that solve a similar
   problem (`apps/web/src/features/*/`, `apps/web/src/app/(app)/*/page.tsx`)
 - `.mstack/design-system/DESIGN.md` if present — the locked design system
+- `paths.prd` if the file exists — personas and voice constraints that
+  should shape copy and layout choices
 
 The mockups must use the actual brand tokens. No fake colours, no fake
 typefaces.

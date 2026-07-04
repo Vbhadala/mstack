@@ -260,6 +260,19 @@ else
 fi
 rm -rf "$r"
 
+# resolver: valid-JSON non-object config degrades to defaults
+r=$(make_repo)
+mkdir -p "$r/src" "$r/.mstack"; touch "$r/package-lock.json"
+echo '[1,2]' > "$r/.mstack/config.json"
+if out="$(cd "$r" && "$BIN/resolve-config.sh" 2>"$r/stderr.txt")"; then
+  ok "resolver: non-object config exits 0"
+else
+  err "resolver: non-object config exits 0"
+fi
+assert_json "$out" '._resolved.source' auto "resolver: non-object config uses defaults"
+assert_contains "$r/stderr.txt" "not a JSON object" "resolver: non-object config warns"
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi

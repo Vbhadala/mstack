@@ -37,6 +37,7 @@ skill uses:
 - `paths.designTokens` [monorepo default `packages/config/src/design.ts`]
 - `paths.brandSource` [default `packages/config/src/brand.ts`]
 - `conventions.brandStringLiteralRule` — whether to enforce brand strings only in the brand source
+- `conventions.hardRules` — project rules enforced verbatim when fixing
 
 **Throughout this skill, treat every `src/config/...`, `packages/config/...`,
 or `apps/web/...` path literal — and every `pnpm <script>` command literal —
@@ -55,7 +56,7 @@ Use AskUserQuestion:
 - **Focus** — full audit, or a specific dimension (spacing only, hierarchy
   only, accessibility only)
 
-If localhost, verify the dev server is up; offer to start it.
+If local, verify the dev server is up via the resolved `devUrl`; offer to start it.
 
 ## Phase 2 — Capture
 
