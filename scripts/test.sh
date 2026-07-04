@@ -310,6 +310,53 @@ out="$(cd "$r" && "$BIN/resolve-config.sh")"
 assert_json "$out" '.conventions.tokenDrift' block "resolver: tokenDrift config override"
 rm -rf "$r"
 
+# token-drift: off mode is silent and exits 0
+r=$(make_repo)
+mkdir -p "$r/src"; touch "$r/package-lock.json"
+printf 'export const x = { color: "#ff0000" }\n' > "$r/src/foo.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>"$r/e"); then
+  ok "drift: off exits 0"
+else
+  err "drift: off exits 0"
+fi
+if [ -s "$r/e" ]; then err "drift: off is silent"; else ok "drift: off is silent"; fi
+
+# token-drift: warn mode reports on stderr, exits 0
+mkdir -p "$r/.mstack/design-system"; echo "# d" > "$r/.mstack/design-system/DESIGN.md"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>"$r/e"); then
+  ok "drift: warn exits 0"
+else
+  err "drift: warn exits 0"
+fi
+assert_contains "$r/e" "src/foo.ts" "drift: warn reports the file"
+
+# token-drift: block mode exits 1 on findings
+mkdir -p "$r/.mstack"
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>/dev/null); then
+  err "drift: block exits 1 on findings"
+else
+  ok "drift: block exits 1 on findings"
+fi
+
+# token-drift: the token file itself is excluded
+echo '{ "conventions": { "tokenDrift": "block" }, "paths": { "designTokens": "src/foo.ts" } }' > "$r/.mstack/config.json"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/foo.ts 2>/dev/null); then
+  ok "drift: token file excluded"
+else
+  err "drift: token file excluded"
+fi
+
+# token-drift: clean file passes block mode
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+printf 'export const y = 1\n' > "$r/src/clean.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/clean.ts 2>/dev/null); then
+  ok "drift: clean file passes block"
+else
+  err "drift: clean file passes block"
+fi
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi
