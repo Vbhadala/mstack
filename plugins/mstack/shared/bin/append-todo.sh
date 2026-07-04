@@ -44,7 +44,7 @@ planning; check items off with a pointer to the plan that absorbed them.
 EOF
 fi
 
-if grep -qF -- "$TEXT" "$TODOS"; then
+if grep -qF -- "] $TEXT — " "$TODOS"; then
   echo "already present: $TEXT"
   exit 0
 fi

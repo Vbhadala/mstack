@@ -204,6 +204,14 @@ else
   ok "append-todo: usage error"
 fi
 
+# append-todo: shorter text that is a substring of an existing entry is NOT deduped
+r=$(make_repo)
+(cd "$r" && "$BIN/append-todo.sh" "user" "Fix login redirect loop on Safari" >/dev/null)
+(cd "$r" && "$BIN/append-todo.sh" "user" "Fix login" >/dev/null)
+n="$(grep -c '^- \[ \]' "$r/.mstack/TODOS.md")"
+if [ "$n" = 2 ]; then ok "append-todo: substring text not deduped"; else err "append-todo: substring text not deduped — $n entries"; fi
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi
