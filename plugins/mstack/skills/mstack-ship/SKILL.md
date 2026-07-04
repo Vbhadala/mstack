@@ -53,6 +53,8 @@ Run in order: `commands.typecheck`, `commands.lint`, `commands.build`.
   "ship anyway".
 - A script that doesn't exist in this project (command not found / missing
   script) is skipped — say so explicitly in the summary.
+- **Evidence rule:** record each gate command and the tail of its output in
+  the final summary. A gate you can't quote didn't run.
 
 ## Confirm, then push
 
@@ -103,6 +105,15 @@ Approved review: `.mstack/reviews/<slug>.md` — <N> tasks,
    `${CLAUDE_PLUGIN_ROOT}/shared/bin/append-todo.sh "ship <slug>" "<item>"`.
 4. **Summary:** PR URL (or "printed body"), which gates ran/were skipped,
    roadmap + todos updates made.
+
+## Red flags — you are rationalizing
+
+| Thought | Reality |
+|---|---|
+| "The build failure looks unrelated / flaky — ship anyway" | Never ship on red. If it's truly unrelated, prove it by making it green first. |
+| "The user already said 'ship it' — the confirm is redundant" | Pushing publishes. The confirm shows them exactly WHAT ships. Always ask. |
+| "A quick force-push will tidy the branch" | The per-task commits are the PR's review surface. Never rewrite them. |
+| "There's probably a QA run for this — I'll say it's QA'd" | A fabricated QA line poisons every future PR body. Check, or write "Not QA'd". |
 
 ## Anti-patterns
 

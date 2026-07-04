@@ -149,6 +149,14 @@ situations where you'd want a human in the loop:
 If a task has none of these risks, omit the field — the task runs without
 interruption.
 
+## Red flags — you are rationalizing
+
+| Thought | Reality |
+|---|---|
+| "These acceptance criteria are clear enough" | If /mstack-code can't turn a criterion into a check, the run pauses on it. Push back now — it's cheaper here. |
+| "The plan author obviously meant X — I'll fix it silently" | Silent rewrites hide decisions. Every change is a Concern with a recorded decision. |
+| "I don't need to read the code — the plan describes it" | Plans claim; code decides. Read the files the plan touches before approving. |
+
 ## Anti-patterns
 
 - **Don't write code.** Review only. If you'd reach for Edit on a `src/` file,
