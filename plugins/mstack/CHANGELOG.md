@@ -4,6 +4,49 @@ All notable changes to the `mstack` plugin. Format: [Keep a Changelog](https://k
 This plugin follows SemVer; the **Contract** sub-section flags changes to the
 [skill ↔ project contract](./CONTRACT.md).
 
+## [0.5.0] — The daily dev layer: quick fixes, frontend craft, design-system adoption
+
+### Added
+- `/mstack-fix` — the single front door for bug fixes: bounded look →
+  minimal fix → same-session verification → one commit, with hard
+  escalation triggers (size budget, schema/deps/brand layer, cause not
+  evident → `/mstack-debug` or `/mstack-plan`). Consumes verified debug
+  reports via `--from-debug`, using their failing spec as acceptance.
+  Writes `.mstack/fixes/<run>.md`.
+- `shared/bin/check-token-drift.sh` + `conventions.tokenDrift`
+  (`off|warn|block`, auto `off`/`warn` keyed on DESIGN.md existence) —
+  raw color literals outside the token layer, wired into `/mstack-code`
+  and `/mstack-fix` verification.
+- `shared/references/frontend-craft.md` — one shared taste definition
+  (hierarchy, spacing, states-first, copy, motion, anti-slop), read by
+  `/mstack-mockup`, `/mstack-code` (UI tasks), `/mstack-ux-audit`.
+- `/mstack-mockup` native frames: Expo screens render in 390×844 device
+  frames with safe areas and native chrome when `_resolved.hasExpo`.
+- `/mstack-design-system` **adopt mode** for legacy repos: extract the
+  de-facto system, create the token layer (extract-only — call sites
+  untouched), and generate a token-migration plan for the pipeline.
+
+### Changed
+- `/mstack-debug` repositioned as the escalation target behind
+  `/mstack-fix`: intake gains the fix-escalation path, and its output now
+  hands to `/mstack-fix` (small fixes, failing spec as acceptance) or
+  `/mstack-plan` (real scope) — the previous `/mstack-code` handoff was
+  broken (mstack-code requires an approved review) and is removed.
+- `/mstack-code` reads the craft reference + mockup `FEEDBACK.md` winner
+  on UI-significant tasks; its description no longer claims to be the
+  only code-editing skill.
+
+### Contract
+- **New resolver key `conventions.tokenDrift`** (`off|warn|block`; auto
+  `off` without `.mstack/design-system/DESIGN.md`, `warn` with it).
+- **New repo-owned artifact:** `.mstack/fixes/<YYYY-MM-DD-HHMM-slug>.md`
+  (written by `/mstack-fix`; `Status: fixed | escalated | aborted`).
+- **Debug report `Status` values changed:** `ready-for-code` removed,
+  replaced by `ready-for-fix | ready-for-plan`. Anything keyed to the old
+  value must update.
+- **Two skills now edit code:** `/mstack-code` (pipeline) and
+  `/mstack-fix` (quick lane, size-budgeted).
+
 ## [0.4.0] — Expo release runway + discipline hardening
 
 ### Added
