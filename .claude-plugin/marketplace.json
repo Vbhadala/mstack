@@ -12,7 +12,7 @@
     {
       "name": "mstack",
       "source": "./plugins/mstack",
-      "description": "Opinionated plan -> review -> code agent workflow for app projects, plus QA, debug, mockup, design-system, ux-audit and research skills.",
+      "description": "Opinionated init -> plan -> review -> code -> ship agent workflow for app projects, plus QA, debug, mockup, design-system, ux-audit, research, status and Expo release skills.",
       "version": "0.4.0",
       "category": "workflow",
       "keywords": [

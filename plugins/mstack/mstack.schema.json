@@ -119,7 +119,7 @@
         "runtimeVersionPolicy": {
           "type": "string",
           "enum": ["appVersion", "fingerprint", "nativeVersion", "explicit"],
-          "description": "expo-updates runtimeVersion policy. appVersion is the simple default; fingerprint is the safest for OTA compatibility.",
+          "description": "expo-updates runtimeVersion policy. appVersion is the simple default; fingerprint is the safest for OTA compatibility; explicit means a literal runtimeVersion string set in app.json.",
           "default": "appVersion"
         },
         "updateChannels": {

@@ -168,7 +168,7 @@ a hidden auth requirement). Use `append-learning.sh`.
 **Tester:** /mstack-qa
 
 ## Scenarios run
-1. <scenario> — <pass/fail>
+1. <scenario> — <pass/fail> — <spec + result line that proved it>
 2. …
 
 ## Issues

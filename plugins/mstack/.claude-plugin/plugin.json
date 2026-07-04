@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "mstack",
   "version": "0.4.0",
-  "description": "Opinionated plan -> review -> code agent workflow for app projects, plus QA, debug, mockup, design-system, ux-audit and research skills.",
+  "description": "Opinionated init -> plan -> review -> code -> ship agent workflow for app projects, plus QA, debug, mockup, design-system, ux-audit, research, status and Expo release skills.",
   "author": {
     "name": "mstack"
   },

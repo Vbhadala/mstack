@@ -126,7 +126,8 @@ For each task in order:
    **(a) Spec fidelity.** Compare your diff against the task's `What` and
    `Acceptance` fields: nothing missing, nothing extra — no unrequested
    refactors, features, or "improvements". Record `spec: ok` (or the
-   deviation) in the task's Notes.
+   deviation) in the task's Notes. A deviation you can't justify against
+   the task's `What` is a pause, not a note.
 
    **(b) Mechanical checks.** Run the relevant ones:
    - If task touched `.ts`/`.tsx` → run `commands.typecheck` [default
@@ -138,8 +139,8 @@ For each task in order:
    - If the task's `Acceptance` field references a specific test → run it
    - Do NOT run e2e/Playwright (that's `/mstack-qa`'s job)
 
-6. **If verification fails**, treat it as ambiguity → pause (see below).
-   Don't loop indefinitely on the same fix.
+6. **If verification fails**, fix once and re-verify. A second failure is
+   ambiguity → pause (see below). Never grind retries on the same fix.
 
 7. **Commit.** One commit per task. Message format:
 

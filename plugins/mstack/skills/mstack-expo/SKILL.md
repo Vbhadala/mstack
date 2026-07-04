@@ -34,7 +34,7 @@ Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. If
 `_resolved.hasExpo` is false, abort: "No Expo target detected — /mstack-expo
 needs an Expo app (expo dependency + app.json/app.config)." Keys this skill
 uses: `expo.{runtimeVersionPolicy,updateChannels,monitoring}`,
-`_resolved.{layout,packageManager}`, `commands.*`, `paths.todos`. For
+`_resolved.{layout,packageManager}`, `paths.todos`. For
 monorepos, work from `paths.mobileApp`.
 
 ## Knowledge rules (read before doing anything)
@@ -72,7 +72,10 @@ Initialise `.mstack/releases/<YYYY-MM-DD-HHMM>/report.md` (scaffold below).
 
 Run every check; the report records each with its evidence. ANY failure =
 no-go: stop, report, and route the fix (config fixes you may propose;
-source fixes go to `/mstack-plan` or `/mstack-debug`).
+source fixes go to `/mstack-plan` or `/mstack-debug`). **Setup-mode
+exception:** on a project with no release infra yet, checks 3–6 are
+EXPECTED to fail — in `setup` mode their findings become the setup
+worklist instead of a no-go.
 
 1. **Doctor:** `npx expo-doctor` — must pass (warnings are findings).
 2. **Git state:** clean tree, and confirm the branch/commit the user
@@ -142,7 +145,7 @@ build pointed at that channel → confirm → `eas update --channel <prod>
 --message "<slug>"` → record the update group ID → watch monitoring (below)
 → **rollback path:** `eas update:republish` the previous known-good group
 (verify the current CLI rollback command against live docs first — it
-changes) .
+changes).
 
 **preflight:** stop after Phase 2; report is the deliverable.
 
