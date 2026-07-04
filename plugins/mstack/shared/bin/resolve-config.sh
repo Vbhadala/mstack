@@ -11,7 +11,7 @@
 #   .devUrl
 #   .paths.{designTokens,globalsCss,brandSource,webApp,mobileApp,prd,roadmap,todos}
 #   .commands.{dev,build,lint,typecheck,test,genMobileTw}
-#   .conventions.{brandStringLiteralRule,serviceLayer,apiPrefix,orm,hardRules}
+#   .conventions.{brandStringLiteralRule,serviceLayer,apiPrefix,orm,hardRules,tokenDrift}
 #   .expo.{runtimeVersionPolicy,updateChannels,monitoring}
 #   ._resolved.{packageManager,layout,hasMobile,hasExpo,source}   (informational)
 #
@@ -83,6 +83,9 @@ if [ -f "$PKG" ]; then
   case "$NAME" in @*/*) SCOPE="${NAME%%/*}" ;; esac
 fi
 
+# --- 7. token drift mode (off unless a locked design system exists) -------------
+if [ -f "$ROOT/.mstack/design-system/DESIGN.md" ]; then TOKENDRIFT=warn; else TOKENDRIFT=off; fi
+
 # --- defaults by layout ----------------------------------------------------------
 DEVSCRIPT=dev
 case "$LAYOUT" in
@@ -126,6 +129,7 @@ DEFAULTS="$(jq -n \
   --arg dev "$RUN $DEVSCRIPT" --arg build "$RUN build" --arg lint "$RUN lint" \
   --arg tc "$RUN typecheck" --arg test "$RUN test" --arg gmt "$RUN gen:mobile-tw" \
   --arg orm "$ORM" \
+  --arg td "$TOKENDRIFT" \
   --arg pm "$PM" --arg layout "$LAYOUT" \
   --argjson mob "$HASMOBILE" --argjson expo "$HASEXPO" \
   '{
@@ -144,7 +148,7 @@ DEFAULTS="$(jq -n \
     },
     conventions: {
       brandStringLiteralRule: true, serviceLayer: $svc, apiPrefix: "/api/v1",
-      orm: $orm, hardRules: []
+      orm: $orm, hardRules: [], tokenDrift: $td
     },
     expo: {
       runtimeVersionPolicy: "appVersion",

@@ -296,6 +296,20 @@ else
 fi
 rm -rf "$r"
 
+# resolver: tokenDrift auto off / warn by DESIGN.md, block via config
+r=$(make_repo)
+mkdir -p "$r/src"; touch "$r/package-lock.json"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.tokenDrift' off "resolver: tokenDrift off without DESIGN.md"
+mkdir -p "$r/.mstack/design-system"; echo "# design" > "$r/.mstack/design-system/DESIGN.md"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.tokenDrift' warn "resolver: tokenDrift warn with DESIGN.md"
+mkdir -p "$r/.mstack"
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+out="$(cd "$r" && "$BIN/resolve-config.sh")"
+assert_json "$out" '.conventions.tokenDrift' block "resolver: tokenDrift config override"
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi

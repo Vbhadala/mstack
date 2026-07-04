@@ -108,6 +108,11 @@
           "items": { "type": "string" },
           "description": "Project-specific hard rules enforced verbatim by /mstack-code, /mstack-qa and /mstack-ux-audit (e.g. \"Never edit generated/ files\").",
           "default": []
+        },
+        "tokenDrift": {
+          "type": "string",
+          "enum": ["off", "warn", "block"],
+          "description": "check-token-drift.sh mode: raw color literals outside the token layer. Auto-detected: off when no .mstack/design-system/DESIGN.md exists, warn when one does; block is explicit opt-in."
         }
       }
     },
