@@ -74,7 +74,9 @@ Classify:
 - **adopt** — the file at the resolved `paths.designTokens` does not exist:
   a legacy repo with no token architecture at all. The flow differs — see
   "Adopt mode (legacy repos)" below: extract before propose, and never
-  rewrite call sites.
+  rewrite call sites. Adopt applies only when the repo has substantial
+  existing UI source; a truly fresh project with no tokens AND no real
+  UI yet is **from-scratch**, not adopt.
 
 Tell the user which mode you're in and let them override.
 

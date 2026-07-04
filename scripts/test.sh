@@ -357,6 +357,29 @@ else
 fi
 rm -rf "$r"
 
+# token-drift: multiple file args are all checked (regression: FILES="$*" bug)
+r=$(make_repo)
+mkdir -p "$r/src" "$r/.mstack"; touch "$r/package-lock.json"
+echo '{ "conventions": { "tokenDrift": "block" } }' > "$r/.mstack/config.json"
+printf 'const a = "#ff0000"\n' > "$r/src/a.ts"
+printf 'const b = "#00ff00"\n' > "$r/src/b.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/a.ts src/b.ts 2>"$r/e"); then
+  err "drift: multi-file block exits 1"
+else
+  ok "drift: multi-file block exits 1"
+fi
+assert_contains "$r/e" "src/a.ts" "drift: multi-file reports first file"
+assert_contains "$r/e" "src/b.ts" "drift: multi-file reports second file"
+
+# token-drift: hsl(var(--token)) is compliant, not drift
+printf 'const c = { color: "hsl(var(--primary))" }\n' > "$r/src/c.ts"
+if (cd "$r" && "$BIN/check-token-drift.sh" src/c.ts 2>/dev/null); then
+  ok "drift: var() color functions pass block"
+else
+  err "drift: var() color functions pass block"
+fi
+rm -rf "$r"
+
 # --- summary ---
 echo
 if [ "$fail" = 0 ]; then echo "ALL TESTS PASSED"; else echo "TESTS FAILED"; fi

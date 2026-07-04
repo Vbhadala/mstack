@@ -155,7 +155,7 @@ framework gotcha).
 # Debug — <symptom one-liner>
 
 **Started:** YYYY-MM-DD HH:MM
-**Source:** <user-report | qa/<run>#issue-N>
+**Source:** <user-report | qa/<run>#issue-N | fix/<slug>>
 **Env:** <localhost | staging>
 **Status:** investigating | hypothesis-verified | ready-for-fix | ready-for-plan | manual | reopened
 **Investigator:** /mstack-debug

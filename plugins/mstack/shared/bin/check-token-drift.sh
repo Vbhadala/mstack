@@ -30,7 +30,7 @@ GLOBALS="$(printf '%s' "$CFG_JSON" | jq -r '.paths.globalsCss // empty')"
 BRAND="$(printf '%s' "$CFG_JSON" | jq -r '.paths.brandSource // empty')"
 
 if [ "$#" -gt 0 ]; then
-  FILES="$*"
+  FILES="$(printf '%s\n' "$@")"
 else
   FILES="$(git -C "$ROOT" diff --name-only HEAD 2>/dev/null || true)"
 fi
@@ -51,7 +51,7 @@ while IFS= read -r f; do
   abs="$f"
   if [ ! -f "$abs" ]; then abs="$ROOT/$rel"; fi
   if [ ! -f "$abs" ]; then continue; fi
-  hits="$(grep -nE '#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?\b|#[0-9a-fA-F]{3}\b|rgba?\(|hsla?\(' "$abs" 2>/dev/null || true)"
+  hits="$(grep -nE '#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?\b|#[0-9a-fA-F]{3}\b|rgba?\(|hsla?\(' "$abs" 2>/dev/null | grep -vE '(rgba?|hsla?)\( *var\(' || true)"
   if [ -n "$hits" ]; then
     while IFS= read -r line; do
       echo "token-drift: $rel:$line" >&2
