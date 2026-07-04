@@ -1,7 +1,8 @@
 ---
 name: mstack-code
 description: |
-  The only mstack skill that edits code. Consumes an approved review from
+  The pipeline's code-writing skill (quick out-of-pipeline bug fixes are
+  /mstack-fix's job). Consumes an approved review from
   /mstack-review and executes the implementation plan autonomously, one atomic
   commit per task. Pauses on ambiguity (destructive migrations, brand/design
   layer changes, new deps, failing acceptance criteria). Writes a task ledger
@@ -97,6 +98,11 @@ For each task in order:
 
 2. **Read the files involved** before editing — the review's "Files" list is a
    hint, not a complete read. Sibling files often matter too.
+   For UI tasks (review frontmatter `UI-Significant: yes`), also read
+   `${CLAUDE_PLUGIN_ROOT}/shared/references/frontend-craft.md` and — if
+   `.mstack/mockups/<slug>/FEEDBACK.md` exists — the winning variant's
+   `index.html` + `NOTES.md`: the implementation must match the chosen
+   direction, not reinvent it.
 
 3. **Check the Pause if trigger.** If the task lists a `Pause if` condition
    and the situation matches, **pause now** (jump to "Pause handling" below)
@@ -137,6 +143,10 @@ For each task in order:
      `prisma migrate dev --name <task-slug>`) and confirm a migration file
      was produced
    - If the task's `Acceptance` field references a specific test → run it
+   - If the task touched styles/UI and `conventions.tokenDrift` is not
+     `off` → run `${CLAUDE_PLUGIN_ROOT}/shared/bin/check-token-drift.sh
+     <files touched>`; `warn` findings go in the task's Notes, `block`
+     findings are a failed verification
    - Do NOT run e2e/Playwright (that's `/mstack-qa`'s job)
 
 6. **If verification fails**, fix once and re-verify. A second failure is
