@@ -26,6 +26,9 @@ allowed-tools:
 
 Scenario-driven QA: ask focus → test → report → approve → fix → re-verify.
 
+**Narration:** one short line per scenario/fix between tool calls —
+`report.md` carries the detailed record.
+
 ## Resolve project layout
 
 Run `${CLAUDE_PLUGIN_ROOT}/shared/bin/resolve-config.sh`. It prints the
@@ -93,6 +96,11 @@ Write `report.md` with the scaffold below. Then use AskUserQuestion to ask:
 
 If declined, exit cleanly with status `report-only`.
 
+**Evidence rule:** every scenario pass/fail in `report.md` — and later every
+`✓ fixed` status — must cite the spec run and output from THIS session that
+proved it (spec path + result line, or screenshot). Never mark a scenario
+from memory or from a previous run's result.
+
 ## Phase 4 — Fix + re-verify (only if approved)
 
 For each approved issue:
@@ -155,7 +163,7 @@ a hidden auth requirement). Use `append-learning.sh`.
 # QA report — <YYYY-MM-DD HH:MM>
 
 **Focus:** <user-provided>
-**Env:** <localhost:3000 | staging URL>
+**Env:** <devUrl | staging URL>
 **Status:** in_progress | issues_found | clean | partial | report-only
 **Tester:** /mstack-qa
 
@@ -183,6 +191,15 @@ a hidden auth requirement). Use `append-learning.sh`.
 ## Summary
 N total · X critical · Y high · Z medium · W low
 ```
+
+## Red flags — you are rationalizing
+
+| Thought | Reality |
+|---|---|
+| "The fix is obviously right — re-running the scenario is a formality" | Unverified fixes are the #1 source of bugs that come back. Re-run it. |
+| "One more retry and the flaky test will pass" | Flaky IS the finding. Mark it flaky in the report and ask — don't grind retries. |
+| "It's a one-line fix, the approval gate is overkill" | The gate is the contract. Report first, fix after approval — size is irrelevant. |
+| "While I'm here, I'll fix this other bug too" | Out-of-scope fixes skip review. Add it to the report and ask. |
 
 ## Anti-patterns
 
